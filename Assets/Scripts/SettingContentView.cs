@@ -71,15 +71,15 @@ public class SettingContentView : MonoBehaviour
                         {
                             case 0:
                                 Setting.gameMode = (Setting.GameMode)j;
-                                Debug.LogFormat("[Setting] GameMode: ", j);
+                                Debug.LogFormat("[Setting] GameMode: {0}", j);
                                 break;
                             case 1:
                                 Setting.showMode = (Setting.ShowMode)j;
-                                Debug.LogFormat("[Setting] ShowMode: ", j);
+                                Debug.LogFormat("[Setting] ShowMode: {0}", j);
                                 break;
                             case 2:
                                 Setting.ruleMode = (Setting.RuleMode)j;
-                                Debug.LogFormat("[Setting] RuleMode: ", j);
+                                Debug.LogFormat("[Setting] RuleMode: {0}", j);
                                 break;
                             default:
                                 Debug.LogError("[Setting] Unknown Mode");

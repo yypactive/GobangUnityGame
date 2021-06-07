@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class OpenMenuPanelVIew : MonoBehaviour
+public class OpenMenuPanelView : BaseSingletonView
 {
     public Button startBtn;
     // Start is called before the first frame update
@@ -13,7 +13,7 @@ public class OpenMenuPanelVIew : MonoBehaviour
         {
             startBtn.onClick.AddListener(delegate ()
             {
-                gameObject.SetActive(false);
+                GlobalMgr.Instance.StartNewGame();
             });
         }
     }
