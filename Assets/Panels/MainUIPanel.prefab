@@ -308,7 +308,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ee5a16d42d7f70468ebf19f77d6ca48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tile: {fileID: 0}
+  tile: {fileID: 251345331857660142, guid: bb2dc1260fe8485478c03c594c5b5981, type: 3}
   boardPanel: {fileID: 7950011853359284356}
   LeftPanel: {fileID: 3582513386464521842}
   firstInfoPanel: {fileID: 7898144729151471126}

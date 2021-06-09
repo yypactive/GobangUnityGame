@@ -6,6 +6,13 @@ public static class UI {
         if (comp == null)
             return;
         var obj = comp.gameObject;
+        SetActive(obj, isActive);
+    }
+
+    public static void SetActive(GameObject obj, bool isActive)
+    {
+        if (obj == null)
+            return;
         if (obj.activeSelf != isActive)
             obj.SetActive(isActive);
     }

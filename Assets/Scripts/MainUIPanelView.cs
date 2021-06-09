@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class MainUIPanelView : BaseSingletonView
 {
+# region UI
     public GameObject tile;
     public Transform boardPanel;
     public Transform LeftPanel;
@@ -11,6 +12,7 @@ public class MainUIPanelView : BaseSingletonView
     public GameInfoLayoutView firstInfoPanel;
     public GameInfoLayoutView secondInfoPanel;
     // Start is called before the first frame update
+# endregion 
     void Start()
     {
         
