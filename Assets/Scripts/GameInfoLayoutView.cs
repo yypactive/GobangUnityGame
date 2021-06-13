@@ -15,4 +15,9 @@ public class GameInfoLayoutView : MonoBehaviour
     {
         
     }
+
+    public void UpdateInfo()
+    {
+        
+    }
 }

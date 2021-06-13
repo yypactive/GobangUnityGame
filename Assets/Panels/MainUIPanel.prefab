@@ -122,6 +122,7 @@ GameObject:
   - component: {fileID: 7950011853359284356}
   - component: {fileID: 4592686859405567205}
   - component: {fileID: 6741557135172521322}
+  - component: {fileID: 6878133653585550024}
   m_Layer: 0
   m_Name: BoardPanel
   m_TagString: Untagged
@@ -184,6 +185,19 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &6878133653585550024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5856429157541339781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4fa80303c59e114495c7b1d1c3a4c8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tile: {fileID: 251345331857660142, guid: bb2dc1260fe8485478c03c594c5b5981, type: 3}
 --- !u!1 &6736279020835712591
 GameObject:
   m_ObjectHideFlags: 0
@@ -308,11 +322,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ee5a16d42d7f70468ebf19f77d6ca48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tile: {fileID: 251345331857660142, guid: bb2dc1260fe8485478c03c594c5b5981, type: 3}
-  boardPanel: {fileID: 7950011853359284356}
+  BoardPanel: {fileID: 6878133653585550024}
   LeftPanel: {fileID: 3582513386464521842}
-  firstInfoPanel: {fileID: 7898144729151471126}
-  secondInfoPanel: {fileID: 182476753259453154}
+  FirstInfoPanel: {fileID: 7898144729151471126}
+  SecondInfoPanel: {fileID: 182476753259453154}
 --- !u!1001 &2188094684824089414
 PrefabInstance:
   m_ObjectHideFlags: 0

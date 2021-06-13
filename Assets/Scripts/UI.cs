@@ -16,4 +16,9 @@ public static class UI {
         if (obj.activeSelf != isActive)
             obj.SetActive(isActive);
     }
+
+    public static int Clamp(int val, int minVal, int maxVal)
+    {
+        return val < minVal ? minVal : ( val > maxVal ? maxVal : val);
+    }
 }

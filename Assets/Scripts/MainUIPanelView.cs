@@ -1,18 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class MainUIPanelView : BaseSingletonView
 {
 # region UI
-    public GameObject tile;
-    public Transform boardPanel;
+    public BoardPanelView BoardPanel;
     public Transform LeftPanel;
 
-    public GameInfoLayoutView firstInfoPanel;
-    public GameInfoLayoutView secondInfoPanel;
+    public GameInfoLayoutView FirstInfoPanel;
+    public GameInfoLayoutView SecondInfoPanel;
     // Start is called before the first frame update
-# endregion 
+# endregion
+
+# region data
+    private GameInfoLayoutView blackInfoPanel;
+    private GameInfoLayoutView whiteInfoPanel;
+# endregion
+
     void Start()
     {
         
@@ -20,11 +26,36 @@ public class MainUIPanelView : BaseSingletonView
 
     public void StartNewGame()
     {
-        GameObject.Instantiate(tile, boardPanel);
+        // logic
+        GameLogicMgr.Instance.StartNewLogicGame();
+        // ui
+        if (Setting.showMode == Setting.ShowMode.Desktop)
+        {
+            blackInfoPanel = FirstInfoPanel;
+            whiteInfoPanel = FirstInfoPanel;
+            UI.SetActive(FirstInfoPanel, true);
+            UI.SetActive(SecondInfoPanel, false);
+        }
+        else
+        {
+            blackInfoPanel = FirstInfoPanel;
+            whiteInfoPanel = SecondInfoPanel;
+            UI.SetActive(FirstInfoPanel, true);
+            UI.SetActive(SecondInfoPanel, true);
+        }
+        UpdateMainUI();
     }
-    // Update is called once per frame
-    void Update()
+
+    public void AddNewChess(Vector2Int pos, int val)
     {
-        
+        GameLogicMgr.Instance.TryAddNewChess(pos, val);
+        UpdateMainUI();
+    }
+
+    public void UpdateMainUI()
+    {
+        BoardPanel.UpdateChessBoard();
+        blackInfoPanel.UpdateInfo();
+        whiteInfoPanel.UpdateInfo();
     }
 }

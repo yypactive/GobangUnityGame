@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public enum BoardTileState {
     White = -1,
@@ -23,25 +24,38 @@ public class BoardTileView : MonoBehaviour
         }
         private set {
             _currValue = value;
-            if (_currValue < 0)
-                _currState = BoardTileState.White;
-            else if (_currValue > 0)
+            var state = _currValue % 2;
+            if (_currValue == 0)
+                _currState = BoardTileState.Vacant;
+            else if (state > 0)
                 _currState = BoardTileState.Black;
             else
-                _currState = BoardTileState.Vacant;
+                _currState = BoardTileState.White;
         }
     }
+    public Vector2Int Pos {get; private set;}
     public GameObject BlackChessObj;
     public GameObject WhiteChessObj; 
     void Awake()
     {
         CurrValue = 0;
     }
-    
-    void SetValue(int value)
+
+    public void SetPos(int _row, int _col)
+    {
+        Pos = new Vector2Int(_col, _row);
+    }
+    public void SetValue(int value)
     {
         CurrValue = value;
         UI.SetActive(BlackChessObj, CurrState == BoardTileState.Black);
         UI.SetActive(WhiteChessObj, CurrState == BoardTileState.White);
+    }
+
+    public void OnTileClicked()
+    {
+        var mainUIPanelView = PanelMgr.Instance.GetSingletonView(
+            Type.GetType("MainUIPanelView")) as MainUIPanelView;
+        mainUIPanelView.AddNewChess(Pos, GameRecordMgr.Instance.GetCurrRoundCnt());
     }
 }
