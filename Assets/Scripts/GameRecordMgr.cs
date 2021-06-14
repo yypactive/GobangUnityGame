@@ -43,7 +43,6 @@ public class GameRecordMgr
         {
             GameHistoryMgr.Instance.AddGameHistory(GameRecordStack);
         }
-        GameRecordStack.Clear();
         IsRun = false;
     }
 

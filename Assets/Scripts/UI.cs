@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using UnityEngine.UI;
 public static class UI {
     public static void SetActive(Component comp, bool isActive)
     {
@@ -20,5 +20,13 @@ public static class UI {
     public static int Clamp(int val, int minVal, int maxVal)
     {
         return val < minVal ? minVal : ( val > maxVal ? maxVal : val);
+    }
+
+    public static void SetSprite(Image image, string path)
+    {
+        var sprite = Resources.Load<Sprite>(path);
+
+        if (image != null)
+            image.sprite = sprite;
     }
 }

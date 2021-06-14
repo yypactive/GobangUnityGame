@@ -26,5 +26,11 @@ public class GlobalMgr
         var mainUIView = PanelMgr.Instance.GetSingletonView(Type.GetType("MainUIPanelView")) as MainUIPanelView;
         mainUIView.StartNewGame();
     }
+
+    public void SetUIGameVictory()
+    {
+        var mainUIView = PanelMgr.Instance.GetSingletonView(Type.GetType("MainUIPanelView")) as MainUIPanelView;
+        mainUIView.SetGameVictory();
+    }
     
 }

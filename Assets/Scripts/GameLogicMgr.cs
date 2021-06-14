@@ -52,6 +52,12 @@ public class GameLogicMgr
         return true;
     }
 
+    public bool IsBlackRound()
+    {
+        var rndCnt = GameRecordMgr.Instance.GetCurrRoundCnt();
+        return rndCnt %2 == 1;
+    }
+
     public List<List<int>> GetCurrRoundBoardState()
     {
         var gameRecordStack = GameRecordMgr.Instance.GameRecordStack;
@@ -118,6 +124,7 @@ public class GameLogicMgr
     public void SetGameVictory(int rndCont)
     {
         Debug.Log("Win: " + rndCont);
+        GlobalMgr.Instance.SetUIGameVictory();
         GameRecordMgr.Instance.End();
     }
 

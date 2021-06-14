@@ -9,6 +9,8 @@ public class MainUIPanelView : BaseSingletonView
     public BoardPanelView BoardPanel;
     public Transform LeftPanel;
 
+    public WinInfoPanelView WinInfoPanel;
+
     public GameInfoLayoutView FirstInfoPanel;
     public GameInfoLayoutView SecondInfoPanel;
     // Start is called before the first frame update
@@ -29,6 +31,7 @@ public class MainUIPanelView : BaseSingletonView
         // logic
         GameLogicMgr.Instance.StartNewLogicGame();
         // ui
+        UI.SetActive(WinInfoPanel, false);
         if (Setting.showMode == Setting.ShowMode.Desktop)
         {
             blackInfoPanel = FirstInfoPanel;
@@ -55,7 +58,26 @@ public class MainUIPanelView : BaseSingletonView
     public void UpdateMainUI()
     {
         BoardPanel.UpdateChessBoard();
-        blackInfoPanel.UpdateInfo();
-        whiteInfoPanel.UpdateInfo();
+        if (GameRecordMgr.Instance.IsRun)
+        {
+            if (GameLogicMgr.Instance.IsBlackRound())
+            {
+                whiteInfoPanel.UpdateInfoView(false);
+                blackInfoPanel.UpdateInfoView(true);
+            }
+            else
+            {
+                blackInfoPanel.UpdateInfoView(false);
+                whiteInfoPanel.UpdateInfoView(true);
+            }
+        }
+    }
+
+    public void SetGameVictory()
+    {
+        blackInfoPanel.UpdateInfoView(false);
+        whiteInfoPanel.UpdateInfoView(false);
+        WinInfoPanel.UpdateWinInfo();
+        UI.SetActive(WinInfoPanel, true);
     }
 }
