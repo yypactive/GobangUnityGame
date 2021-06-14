@@ -142,6 +142,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 740b00ad451da404b9be4d1352e943d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Bg: {fileID: 1148196312308741102}
   BlackChessObj: {fileID: 8188593067932025662}
   WhiteChessObj: {fileID: 4555719140781917747}
 --- !u!1 &2990769389293730365

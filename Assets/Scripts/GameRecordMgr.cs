@@ -31,10 +31,12 @@ public class GameRecordMgr
     }
     
     public Stack<GameRecordItem> GameRecordStack { get; private set;} = new Stack<GameRecordItem>();
+    public List<Vector2Int> WinChessList { get; private set;} = new List<Vector2Int>(5);
     public bool IsRun { get; private set; } = false;
 
     public void Reset () {
         GameRecordStack.Clear();
+        WinChessList.Clear();
         IsRun = true;
     }
 
@@ -58,12 +60,25 @@ public class GameRecordMgr
 
     public GameRecordItem GetLastRecord()
     {
-        return GameRecordStack.Peek();
+        if (GameRecordStack.Count > 0)
+            return GameRecordStack.Peek();
+        else
+            return null;
     }
 
     public int GetCurrRoundCnt()
     {
         return GameRecordStack.Count + 1;
+    }
+
+    public void GenerateWinChessList(Vector2Int startPos, Vector2Int dir)
+    {
+        WinChessList.Clear();
+        for (int i = 0; i < 5; i++)
+        {
+            Vector2Int pos = new Vector2Int(startPos.x + i * dir.x, startPos.y + i * dir.y);
+            WinChessList.Add(pos);
+        }
     }
     
 }

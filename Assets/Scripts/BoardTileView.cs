@@ -1,18 +1,39 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System;
 
-public enum BoardTileState {
+public enum BoardTileChessState {
     White = -1,
     Vacant = 0,
     Black = 1,
 }
 
+public enum BoardTileBgState {
+    NoData = -1,
+    Normal = 0,
+    Important = 1,
+    WinChess = 2,
+    LastChess = 3,
+    CurrChess = 4,
+}
+
+
 public class BoardTileView : MonoBehaviour
 {
-    private BoardTileState _currState;
-    public BoardTileState CurrState {
+    public static Dictionary<BoardTileBgState, string> BoardTileBgColorMap 
+        = new Dictionary<BoardTileBgState, string>{
+            { BoardTileBgState.Normal,      "#E6C8374F" },
+            { BoardTileBgState.Important,   "#FF700B5F" },
+            { BoardTileBgState.WinChess,    "#C66110F0" },
+            { BoardTileBgState.LastChess,   "#EFEF11FF" },
+            { BoardTileBgState.CurrChess,   "#46DDD6F0" },
+        };
+
+    private BoardTileBgState currBgState = BoardTileBgState.NoData;
+    private BoardTileChessState _currState;
+    public BoardTileChessState CurrState {
         get {
             return _currState;
         }
@@ -26,14 +47,15 @@ public class BoardTileView : MonoBehaviour
             _currValue = value;
             var state = _currValue % 2;
             if (_currValue == 0)
-                _currState = BoardTileState.Vacant;
+                _currState = BoardTileChessState.Vacant;
             else if (state > 0)
-                _currState = BoardTileState.Black;
+                _currState = BoardTileChessState.Black;
             else
-                _currState = BoardTileState.White;
+                _currState = BoardTileChessState.White;
         }
     }
     public Vector2Int Pos {get; private set;}
+    public Image Bg;
     public GameObject BlackChessObj;
     public GameObject WhiteChessObj; 
     void Awake()
@@ -48,8 +70,31 @@ public class BoardTileView : MonoBehaviour
     public void SetValue(int value)
     {
         CurrValue = value;
-        UI.SetActive(BlackChessObj, CurrState == BoardTileState.Black);
-        UI.SetActive(WhiteChessObj, CurrState == BoardTileState.White);
+        UI.SetActive(BlackChessObj, CurrState == BoardTileChessState.Black);
+        UI.SetActive(WhiteChessObj, CurrState == BoardTileChessState.White);
+        UpdateTileColor();
+    }
+
+    public void UpdateTileColor()
+    {
+        var newBgState = BoardTileBgState.Normal;
+        if (GameRecordMgr.Instance.GetLastRecord()?.Pos == Pos)
+            newBgState = BoardTileBgState.LastChess;
+        // if (false)
+        //     newBgState = BoardTileBgState.CurrChess;
+        else if (GameRecordMgr.Instance.WinChessList.Contains(Pos))
+            newBgState = BoardTileBgState.WinChess;
+        else if (Pos.x % (GameLogicMgr.tileCnt / 3) == GameLogicMgr.tileCnt / 6 
+            && Pos.y % (GameLogicMgr.tileCnt / 3) == GameLogicMgr.tileCnt / 6)
+            newBgState = BoardTileBgState.Important;
+
+        if (currBgState != newBgState)
+        {
+            currBgState = newBgState;
+            Color color;
+            ColorUtility.TryParseHtmlString(BoardTileBgColorMap[currBgState], out color);
+            Bg.color = color;
+        }
     }
 
     public void OnTileClicked()

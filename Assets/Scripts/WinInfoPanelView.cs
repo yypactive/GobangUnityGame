@@ -1,18 +1,25 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class WinInfoPanelView : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public Text WinInfoTxt;
 
     public void OnReGameBtnClicked()
     {
         GlobalMgr.Instance.StartNewGame();
+    }
+
+    public void OnSettingBtnClicked()
+    {
+        GlobalMgr.Instance.OpenSettingPanel();
+    }
+
+    public void OnHistoryBtnClicked()
+    {
+        GlobalMgr.Instance.OpenHistoryPanel();
     }
 
     

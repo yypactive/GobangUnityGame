@@ -47,8 +47,12 @@ public class GameLogicMgr
             return false;
         GameRecordMgr.Instance.AddNewRecord(pos.y, pos.x, val);
         GetCurrRoundBoardState();
-        if (CheckVictory(pos, val))
+        Vector2Int startPos, dir;
+        if (CheckVictory(pos, val, out startPos, out dir))
+        {
+            GameRecordMgr.Instance.GenerateWinChessList(startPos, dir);
             SetGameVictory(GameRecordMgr.Instance.GetCurrRoundCnt());
+        }
         return true;
     }
 
@@ -86,8 +90,10 @@ public class GameLogicMgr
             new Vector2Int(1,-1),
         };
 
-    public bool CheckVictory(Vector2Int lastChessPos, int val)
+    public bool CheckVictory(Vector2Int lastChessPos, int val, out Vector2Int victoryStartPos, out Vector2Int victoryDir)
     {
+        victoryStartPos = new Vector2Int();
+        victoryDir = new Vector2Int();
         foreach (var dir in DirArray)
         {
             var startPos = new Vector2Int(
@@ -98,6 +104,8 @@ public class GameLogicMgr
                 lastChessPos.x + dir.x * 5,
                 lastChessPos.y + dir.y * 5
             );
+            victoryStartPos = startPos;
+            victoryDir = dir;
             var cnt = 0;
             for (int i = startPos.y, j = startPos.x;
                 (i != endPos.y || j != endPos.x);
@@ -107,10 +115,14 @@ public class GameLogicMgr
                     continue;
                 var posVal = CurrRoundBoardState[i][j];
                 if (posVal != 0 && posVal % 2 == val % 2)
+                {
+                    if (cnt == 0)
+                        victoryStartPos = new Vector2Int(j, i);
                     cnt ++;
+                }
                 else
                 {
-                    if (cnt == 5)
+                    if (cnt == 5)  
                         return true;
                     cnt = 0;
                 }
