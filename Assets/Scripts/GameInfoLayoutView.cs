@@ -17,18 +17,6 @@ public class GameInfoLayoutView : MonoBehaviour
     public Button ShrinkBtn;
 
 #endregion
-    
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     public void UpdateInfoView(bool isActive = false)
     {
@@ -39,13 +27,18 @@ public class GameInfoLayoutView : MonoBehaviour
             else
                 UI.SetSprite(TitleImg, "Arts/Chess/WhiteCircle");
         }
-
+        UI.SetActive(ConfirmBtn, Setting.addChessMode == Setting.AddChessMode.TwoStep);
         UI.SetActive(gameObject, isActive);
+        OnShrinkClicked();
     }
 
     public void OnConfirmBtnClicked()
     {
-
+        var tmpChess = GlobalMgr.Instance.tmpChess;
+        if (tmpChess != null)
+        {
+            GlobalMgr.Instance.TryAddNewChess(tmpChess.Pos, tmpChess.Value);
+        }
     }
 
     public void OnSurrenderBtnClicked()

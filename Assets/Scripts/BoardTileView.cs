@@ -78,10 +78,10 @@ public class BoardTileView : MonoBehaviour
     public void UpdateTileColor()
     {
         var newBgState = BoardTileBgState.Normal;
-        if (GameRecordMgr.Instance.GetLastRecord()?.Pos == Pos)
+        if (Pos == GlobalMgr.Instance.tmpChess?.Pos)
+            newBgState = BoardTileBgState.CurrChess;
+        else if (GameRecordMgr.Instance.GetLastRecord()?.Pos == Pos)
             newBgState = BoardTileBgState.LastChess;
-        // if (false)
-        //     newBgState = BoardTileBgState.CurrChess;
         else if (GameRecordMgr.Instance.WinChessList.Contains(Pos))
             newBgState = BoardTileBgState.WinChess;
         else if (Pos.x % (GameLogicMgr.tileCnt / 3) == GameLogicMgr.tileCnt / 6 

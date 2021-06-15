@@ -29,6 +29,7 @@ public class MainUIPanelView : BaseSingletonView
     public void StartNewGame()
     {
         // logic
+        GlobalMgr.Instance.ClearTmpChess();
         GameLogicMgr.Instance.StartNewLogicGame();
         // ui
         UI.SetActive(WinInfoPanel, false);
@@ -51,8 +52,14 @@ public class MainUIPanelView : BaseSingletonView
 
     public void AddNewChess(Vector2Int pos, int val)
     {
-        GameLogicMgr.Instance.TryAddNewChess(pos, val);
-        UpdateMainUI();
+        if (Setting.addChessMode == Setting.AddChessMode.OneStep)
+        {
+            GlobalMgr.Instance.TryAddNewChess(pos, val);
+        }
+        else
+        {
+            GlobalMgr.Instance.TryAddNewTmpChess(pos, val);
+        }
     }
 
     public void UpdateMainUI()

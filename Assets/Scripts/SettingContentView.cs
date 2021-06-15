@@ -25,9 +25,28 @@ class Setting
         ForbiddenMove,
     }
 
+    public enum AddChessMode
+    {
+        OneStep,
+        TwoStep,
+    }
+
+
     static public GameMode gameMode = (GameMode)0;
-    static public ShowMode showMode = (ShowMode)0;
     static public RuleMode ruleMode = (RuleMode)0;
+
+#if UNITY_ANDROID
+    static public ShowMode showMode = (ShowMode)0;
+    static public AddChessMode addChessMode = (AddChessMode)1;
+#elif UNITY_IPHONE
+    static public ShowMode showMode = (ShowMode)0;
+    static public AddChessMode addChessMode = (AddChessMode)1;
+#else
+    static public ShowMode showMode = (ShowMode)1;
+    static public AddChessMode addChessMode = (AddChessMode)0;
+#endif
+
+    
 
 }
 
@@ -59,6 +78,11 @@ public class SettingContentView : MonoBehaviour
         InitToggle();
     }
 
+    void OnEnable()
+    {
+        UpdateUIBySetting();
+    }
+
     void InitToggle()
     {
         TraverseToggles(
@@ -79,6 +103,10 @@ public class SettingContentView : MonoBehaviour
                                 break;
                             case 2:
                                 Setting.ruleMode = (Setting.RuleMode)j;
+                                Debug.LogFormat("[Setting] RuleMode: {0}", j);
+                                break;
+                            case 3:
+                                Setting.addChessMode = (Setting.AddChessMode)j;
                                 Debug.LogFormat("[Setting] RuleMode: {0}", j);
                                 break;
                             default:
@@ -108,6 +136,9 @@ public class SettingContentView : MonoBehaviour
                         case 2:
                             Setting.ruleMode = (Setting.RuleMode)j;
                             break;
+                        case 3:
+                            Setting.addChessMode = (Setting.AddChessMode)j;
+                            break;
                         default:
                             break;
                     }
@@ -134,15 +165,13 @@ public class SettingContentView : MonoBehaviour
                     value = (int)Setting.ruleMode;
                     toggle.isOn = value == j;
                     break;
+                case 3:
+                    value = (int)Setting.addChessMode;
+                    toggle.isOn = value == j;
+                    break;
                 default:
                     break;
             }
         });
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

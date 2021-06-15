@@ -74,5 +74,10 @@ public class BoardPanelView : BaseSingletonView
         for (int i = 0; i < GameLogicMgr.tileCnt; ++i)
             for (int j = 0; j < GameLogicMgr.tileCnt; ++j)
                 tileViewMap[i][j].SetValue(currRoundState[i][j]);
+        var tmpChess = GlobalMgr.Instance.tmpChess;
+        if (tmpChess != null)
+            tileViewMap[tmpChess.Pos.y][tmpChess.Pos.x].SetValue(tmpChess.Value);
     }
+
+
 }
