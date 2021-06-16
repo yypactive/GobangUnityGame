@@ -2,9 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+
+
 public class GameLogicMgr
 {
     public static int tileCnt = 15;
+    public static int WinCnt = 5;
     private static readonly GameLogicMgr _GameLogicMgr = new GameLogicMgr();
     public static GameLogicMgr Instance
     {
@@ -13,6 +16,8 @@ public class GameLogicMgr
             return _GameLogicMgr;
         }
     }
+
+
     private List<List<int>> currRoundBoardState;
     private List<List<int>> CurrRoundBoardState {
         get {
@@ -47,11 +52,14 @@ public class GameLogicMgr
             return false;
         GameRecordMgr.Instance.AddNewRecord(pos.y, pos.x, val);
         GetCurrRoundBoardState();
-        Vector2Int startPos, dir;
-        if (CheckVictory(pos, val, out startPos, out dir))
+        if (CheckVictory(pos, val))
         {
-            GameRecordMgr.Instance.GenerateWinChessList(startPos, dir);
-            SetGameVictory(GameRecordMgr.Instance.GetCurrRoundCnt());
+            // GameRecordMgr.Instance.GenerateWinChessList(startPos, dir);
+            SetGameVictory(ResultReasonEnum.Normal);
+        }
+        else if (Setting.ruleMode == Setting.RuleMode.Balanced && !IsBlackRound() && CheckBalanceBreaker(pos, val))
+        {
+            SetGameVictory(ResultReasonEnum.Balanced);
         }
         return true;
     }
@@ -90,7 +98,79 @@ public class GameLogicMgr
             new Vector2Int(1,-1),
         };
 
-    public bool CheckVictory(Vector2Int lastChessPos, int val, out Vector2Int victoryStartPos, out Vector2Int victoryDir)
+    public bool CheckVictory(Vector2Int lastChessPos, int val)
+    {
+        foreach (var dir in DirArray)
+        {
+            var result = CheckChess(lastChessPos, val, dir, WinCnt);
+            if (result)
+                return true;
+        }
+        return false;
+    }
+
+    public bool CheckBalanceBreaker(Vector2Int lastChessPos, int val)
+    {
+        var sumThree = 0;
+        var sumFour = 0;
+        foreach (var dir in DirArray)
+        {
+            var resultThree = CheckChess(lastChessPos, val, dir, 3, true);
+            sumThree = resultThree ? sumThree + 1 : sumThree;
+            if (sumThree > 1)
+                return true;
+            var resultFour = CheckChess(lastChessPos, val, dir, 4, true);
+            sumFour = resultFour ? sumFour + 1 : sumFour;
+            if (sumFour > 1)
+                return true;
+            var resultSix = CheckChess(lastChessPos, val, dir, 6);
+            if (resultSix)
+                return true;
+        }
+        return false;
+    } 
+
+    public bool CheckChess(Vector2Int centralChess, int val, Vector2Int dir, int length, bool vacantValid = false)
+    {
+        var rangeLength = vacantValid ? length + 1 : length;
+        var startPos = new Vector2Int(centralChess.x - dir.x * rangeLength, centralChess.y - dir.y * rangeLength);
+        var endPos = new Vector2Int (centralChess.x + dir.x * rangeLength, centralChess.y + dir.y * rangeLength);
+        var vcnt = 0;
+        var cnt = 0;
+        var historyVal = 2;
+        for (int i = startPos.y, j = startPos.x; i != endPos.y || j != endPos.x; i = i + dir.y, j = j + dir.x)
+        {
+            if (i < 0 || i > tileCnt - 1 || j < 0 || j > tileCnt - 1)
+                continue;
+            var posVal = CurrRoundBoardState[i][j];
+            if (posVal != 0 && posVal % 2 == val % 2)
+            {
+                historyVal = 2;
+                cnt++;
+            }
+            else
+            {
+                if (vacantValid && posVal == 0)
+                    historyVal--;
+                else
+                    historyVal = 0;
+                if (historyVal <= 0)
+                {
+                    if (cnt == length && (!vacantValid || cnt + vcnt == WinCnt)) return true;
+                    cnt = 0; vcnt = 0;
+                }
+                if (vacantValid && posVal == 0)
+                {
+                    vcnt ++;
+                    if (cnt == length && (!vacantValid || cnt + vcnt == WinCnt)) return true;
+                }
+            }
+        }
+        if (cnt == length && (!vacantValid || cnt + vcnt == WinCnt)) return true;
+        return false;
+    }
+    
+    public bool GetVictory(Vector2Int lastChessPos, int val, out Vector2Int victoryStartPos, out Vector2Int victoryDir)
     {
         victoryStartPos = new Vector2Int();
         victoryDir = new Vector2Int();
@@ -133,9 +213,10 @@ public class GameLogicMgr
         return false;
     }
 
-    public void SetGameVictory(int rndCont)
+
+    public void SetGameVictory(ResultReasonEnum reason)
     {
-        Debug.Log("Win: " + rndCont);
+        GameRecordMgr.Instance.ResultItem = new GameResultItem(reason, null);
         GlobalMgr.Instance.SetUIGameVictory();
         GameRecordMgr.Instance.End();
     }

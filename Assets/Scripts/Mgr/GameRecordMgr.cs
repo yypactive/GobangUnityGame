@@ -3,6 +3,24 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 
+public enum ResultReasonEnum {
+    Normal = 0,
+    Surrender = 1,
+    Balanced = 2,
+    TimeOut = 3,
+}
+
+public class GameResultItem {
+    public ResultReasonEnum Reason {get; private set;}
+    public List<Vector2Int> ChessList {get; private set;}
+
+    public GameResultItem(ResultReasonEnum _reason, List<Vector2Int> _chessList)
+    {
+        Reason = _reason;
+        ChessList = _chessList;
+    }
+}
+
 public class GameRecordItem {
     public Vector2Int Pos {get; private set;}
     public int Value {get; private set;}
@@ -32,6 +50,7 @@ public class GameRecordMgr
     
     public Stack<GameRecordItem> GameRecordStack { get; private set;} = new Stack<GameRecordItem>();
     public List<Vector2Int> WinChessList { get; private set;} = new List<Vector2Int>(5);
+    public GameResultItem ResultItem;
     public bool IsRun { get; private set; } = false;
 
     public void Reset () {

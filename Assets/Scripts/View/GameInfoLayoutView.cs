@@ -43,7 +43,7 @@ public class GameInfoLayoutView : MonoBehaviour
 
     public void OnSurrenderBtnClicked()
     {
-        GameLogicMgr.Instance.SetGameVictory(GameRecordMgr.Instance.GetCurrRoundCnt());
+        GameLogicMgr.Instance.SetGameVictory(ResultReasonEnum.Normal);
     }
 
     public void OnMoreBtnClicked()

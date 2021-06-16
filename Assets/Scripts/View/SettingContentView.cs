@@ -21,8 +21,8 @@ class Setting
 
     public enum RuleMode
     {
-        FreeMove,
-        ForbiddenMove,
+        Free,
+        Balanced,
     }
 
     public enum AddChessMode
