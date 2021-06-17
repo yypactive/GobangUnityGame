@@ -33,14 +33,14 @@ class Setting
 
 
     static public GameMode gameMode = (GameMode)0;
-    static public RuleMode ruleMode = (RuleMode)0;
+    static public RuleMode ruleMode = (RuleMode)1;
 
 #if UNITY_ANDROID
     static public ShowMode showMode = (ShowMode)0;
-    static public AddChessMode addChessMode = (AddChessMode)1;
+    static public AddChessMode addChessMode = (AddChessMode)0;
 #elif UNITY_IPHONE
     static public ShowMode showMode = (ShowMode)0;
-    static public AddChessMode addChessMode = (AddChessMode)1;
+    static public AddChessMode addChessMode = (AddChessMode)0;
 #else
     static public ShowMode showMode = (ShowMode)1;
     static public AddChessMode addChessMode = (AddChessMode)0;

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using UnityEngine;
-
+using UnityEditor;
 
 public class GameLogicMgr
 {
@@ -102,9 +102,8 @@ public class GameLogicMgr
     {
         foreach (var dir in DirArray)
         {
-            var result = CheckChess(lastChessPos, val, dir, WinCnt);
-            if (result)
-                return true;
+            var result = CheckContinuousChess(lastChessPos, val, dir, WinCnt, Setting.ruleMode == Setting.RuleMode.Balanced && !IsBlackRound());
+            if (result) return true;
         }
         return false;
     }
@@ -115,61 +114,113 @@ public class GameLogicMgr
         var sumFour = 0;
         foreach (var dir in DirArray)
         {
-            var resultThree = CheckChess(lastChessPos, val, dir, 3, true);
+            var resultThree = CheckDoubleThreeChess(lastChessPos, val, dir);
             sumThree = resultThree ? sumThree + 1 : sumThree;
             if (sumThree > 1)
                 return true;
-            var resultFour = CheckChess(lastChessPos, val, dir, 4, true);
-            sumFour = resultFour ? sumFour + 1 : sumFour;
+            var cntFour = CheckDoubleFourChess(lastChessPos, val, dir);
+            sumFour = sumFour + cntFour;
             if (sumFour > 1)
                 return true;
-            var resultSix = CheckChess(lastChessPos, val, dir, 6);
+            var resultSix = CheckContinuousChess(lastChessPos, val, dir, 6);
             if (resultSix)
                 return true;
         }
         return false;
-    } 
+    }
 
-    public bool CheckChess(Vector2Int centralChess, int val, Vector2Int dir, int length, bool vacantValid = false)
+    public int GetRealStartAndEndPos(Vector2Int centralChess, Vector2Int dir, int rangeLength, 
+                                        out Vector2Int startPos, out Vector2Int endPos)
     {
-        var rangeLength = vacantValid ? length + 1 : length;
-        var startPos = new Vector2Int(centralChess.x - dir.x * rangeLength, centralChess.y - dir.y * rangeLength);
-        var endPos = new Vector2Int (centralChess.x + dir.x * rangeLength, centralChess.y + dir.y * rangeLength);
-        var vcnt = 0;
+        startPos = new Vector2Int(centralChess.x - dir.x * rangeLength, centralChess.y - dir.y * rangeLength);
+        endPos = new Vector2Int(centralChess.x + dir.x * rangeLength, centralChess.y + dir.y * rangeLength);
+
+        if (startPos.x < 0) startPos = new Vector2Int(0, startPos.y + dir.y / dir.x * (0 - startPos.x));
+        if (startPos.y < 0) startPos = new Vector2Int(startPos.x + dir.x / dir.y * (0 - startPos.y), 0);
+        if (startPos.y > tileCnt - 1) startPos = new Vector2Int(startPos.x + dir.x / dir.y * (tileCnt - 1 - startPos.y), tileCnt - 1);
+        if (endPos.x > tileCnt - 1) endPos = new Vector2Int(tileCnt - 1, endPos.y + dir.y / dir.x * (tileCnt - 1 - endPos.x));
+        if (endPos.y < 0) endPos = new Vector2Int(endPos.x + dir.x / dir.y * (0 - endPos.y), 0);
+        if (endPos.y > tileCnt - 1) endPos = new Vector2Int(endPos.x + dir.x / dir.y * (tileCnt - 1 - endPos.y), tileCnt - 1);
+        return Math.Max(Math.Abs(startPos.x - endPos.x), Math.Abs(startPos.y - endPos.y)) + 1;
+    }
+
+    public bool CheckContinuousChess(Vector2Int centralChess, int val, Vector2Int dir, int length, bool strictEqual = false)
+    {
+        Vector2Int startPos, endPos;
+        var realLength = GetRealStartAndEndPos(centralChess, dir, length, out startPos, out endPos);
         var cnt = 0;
-        var historyVal = 2;
-        for (int i = startPos.y, j = startPos.x; i != endPos.y || j != endPos.x; i = i + dir.y, j = j + dir.x)
+        for (int i = 0; i < realLength; ++i)
         {
-            if (i < 0 || i > tileCnt - 1 || j < 0 || j > tileCnt - 1)
-                continue;
-            var posVal = CurrRoundBoardState[i][j];
+            // if (i < 0 || i > tileCnt - 1 || j < 0 || j > tileCnt - 1)
+                // continue;
+            var posVal = CurrRoundBoardState[startPos.y + dir.y * i][startPos.x + dir.x * i];
             if (posVal != 0 && posVal % 2 == val % 2)
-            {
-                historyVal = 2;
                 cnt++;
-            }
             else
             {
-                if (vacantValid && posVal == 0)
-                    historyVal--;
-                else
-                    historyVal = 0;
-                if (historyVal <= 0)
-                {
-                    if (cnt == length && (!vacantValid || cnt + vcnt == WinCnt)) return true;
-                    cnt = 0; vcnt = 0;
-                }
-                if (vacantValid && posVal == 0)
-                {
-                    vcnt ++;
-                    if (cnt == length && (!vacantValid || cnt + vcnt == WinCnt)) return true;
-                }
+                if (cnt == length || !strictEqual && cnt > length) return true;
+                cnt = 0;
             }
         }
-        if (cnt == length && (!vacantValid || cnt + vcnt == WinCnt)) return true;
+        if (cnt == length || !strictEqual && cnt > length) return true;
+        return false;
+    } 
+
+    public bool CheckDoubleThreeChess(Vector2Int centralChess, int val, Vector2Int dir)
+    {
+        var rangeLength = 4;
+        var winLength = 6;
+        Vector2Int startPos, endPos;
+        var realLength = GetRealStartAndEndPos(centralChess, dir, rangeLength, out startPos, out endPos);
+        for (int i = 0; i < realLength - winLength + 1; ++i)
+        {
+            int [] array = new int[winLength];
+            int zeroCnt = 0;
+            for (int j = 0; j < array.Length; ++j)
+            {
+                array[j] = CurrRoundBoardState[startPos.y + dir.y * (i + j)][startPos.x + dir.x * (i + j)];
+                if (array[j] == 0) zeroCnt ++;
+            }
+            if (array[0] != 0 || array[winLength-1] != 0 )
+                continue;
+            if (zeroCnt == 3)
+                return true;
+        }
         return false;
     }
     
+    public int CheckDoubleFourChess(Vector2Int centralChess, int val, Vector2Int dir)
+    {
+        var sum = 0;
+        var rangeLength = 4;
+        var winLength = 5;
+        Vector2Int startPos, endPos;
+        var realLength = GetRealStartAndEndPos(centralChess, dir, rangeLength, out startPos, out endPos);
+        for (int i = 0; i < realLength - winLength + 1;)
+        {
+            int zeroCnt = 0;
+            int zeroIndex = -1;
+            for (int j = 0; j < winLength; ++j)
+            {
+                var posVal = CurrRoundBoardState[startPos.y + dir.y * (i + j)][startPos.x + dir.x * (i + j)];
+                if (posVal == 0)
+                {
+                    zeroCnt ++;
+                    if (zeroIndex < 0) zeroIndex = j;
+                }
+            }
+            if (zeroCnt == 1)
+            {
+                sum++;
+                // hard code
+                if (zeroIndex == 0) zeroIndex ++;
+            }
+            if (zeroIndex < 0) zeroIndex = 0;
+            i = i + zeroIndex + 1;
+        }
+        return sum;
+    }
+
     public bool GetVictory(Vector2Int lastChessPos, int val, out Vector2Int victoryStartPos, out Vector2Int victoryDir)
     {
         victoryStartPos = new Vector2Int();
