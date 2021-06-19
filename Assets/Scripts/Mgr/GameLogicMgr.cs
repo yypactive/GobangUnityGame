@@ -8,15 +8,12 @@ public class GameLogicMgr
 {
     public static int tileCnt = 15;
     public static int WinCnt = 5;
-    private static readonly GameLogicMgr _GameLogicMgr = new GameLogicMgr();
-    public static GameLogicMgr Instance
-    {
-        get
-        {
-            return _GameLogicMgr;
-        }
-    }
 
+    public GameRecordMgr GameRecordMgr;
+    public GameLogicMgr (GameRecordMgr gameRecordMgr)
+    {
+        GameRecordMgr = gameRecordMgr;
+    }
 
     private List<List<int>> currRoundBoardState;
     private List<List<int>> CurrRoundBoardState {
@@ -37,24 +34,24 @@ public class GameLogicMgr
     public void StartNewLogicGame()
     {
         ClearOldGameState();
-        GameRecordMgr.Instance.Reset();
+        GameRecordMgr.Reset();
     }
 
     private void ClearOldGameState()
     {
-        for (int i = 0; i < GameLogicMgr.tileCnt; ++i)
-            for (int j = 0; j < GameLogicMgr.tileCnt; ++j)
+        for (int i = 0; i < tileCnt; ++i)
+            for (int j = 0; j < tileCnt; ++j)
                 CurrRoundBoardState[i][j] = 0;
     }
     public bool TryAddNewChess(Vector2Int pos, int val)
     {
         if (!IsChessValid(pos))
             return false;
-        GameRecordMgr.Instance.AddNewRecord(pos.y, pos.x, val);
+        GameRecordMgr.AddNewRecord(pos.y, pos.x, val);
         GetCurrRoundBoardState();
         if (CheckVictory(pos, val))
         {
-            // GameRecordMgr.Instance.GenerateWinChessList(startPos, dir);
+            // GlobalMgr.Instance.GameRecordMgr.GenerateWinChessList(startPos, dir);
             SetGameVictory(ResultReasonEnum.Normal);
         }
         else if (Setting.ruleMode == Setting.RuleMode.Balanced && !IsBlackRound() && CheckBalanceBreaker(pos, val))
@@ -66,13 +63,13 @@ public class GameLogicMgr
 
     public bool IsBlackRound()
     {
-        var rndCnt = GameRecordMgr.Instance.GetCurrRoundCnt();
+        var rndCnt = GameRecordMgr.GetCurrRoundCnt();
         return rndCnt %2 == 1;
     }
 
     public List<List<int>> GetCurrRoundBoardState()
     {
-        var gameRecordStack = GameRecordMgr.Instance.GameRecordStack;
+        var gameRecordStack = GameRecordMgr.GameRecordStack;
         foreach (var item in gameRecordStack)
         {
             CurrRoundBoardState[item.Pos.y][item.Pos.x] = item.Value;
@@ -82,7 +79,7 @@ public class GameLogicMgr
 
     public bool IsChessValid(Vector2Int pos)
     {
-        if (!GameRecordMgr.Instance.IsRun)
+        if (!GameRecordMgr.IsRun)
             return false;
         else if (GetCurrRoundBoardState()[pos.y][pos.x] != 0)
         {
@@ -267,9 +264,9 @@ public class GameLogicMgr
 
     public void SetGameVictory(ResultReasonEnum reason)
     {
-        GameRecordMgr.Instance.ResultItem = new GameResultItem(reason, null);
+        GameRecordMgr.ResultItem = new GameResultItem(reason, null);
         GlobalMgr.Instance.SetUIGameVictory();
-        GameRecordMgr.Instance.End();
+        GameRecordMgr.End();
     }
 
 }

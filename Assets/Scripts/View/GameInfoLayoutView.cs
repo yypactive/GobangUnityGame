@@ -22,7 +22,7 @@ public class GameInfoLayoutView : MonoBehaviour
     {
         if (isActive)
         {
-            if (GameLogicMgr.Instance.IsBlackRound())
+            if (GlobalMgr.Instance.GameLogicMgr.IsBlackRound())
                 UI.SetSprite(TitleImg, "Arts/Chess/BlackCircle");
             else
                 UI.SetSprite(TitleImg, "Arts/Chess/WhiteCircle");
@@ -43,7 +43,7 @@ public class GameInfoLayoutView : MonoBehaviour
 
     public void OnSurrenderBtnClicked()
     {
-        GameLogicMgr.Instance.SetGameVictory(ResultReasonEnum.Normal);
+        GlobalMgr.Instance.GameLogicMgr.SetGameVictory(ResultReasonEnum.Normal);
     }
 
     public void OnMoreBtnClicked()

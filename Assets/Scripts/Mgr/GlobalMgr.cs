@@ -16,11 +16,14 @@ public class GlobalMgr
     }
 
     private GlobalMgr() {
-
+        GameRecordMgr = new GameRecordMgr();
+        GameLogicMgr = new GameLogicMgr(GameRecordMgr);
     }
 
     #region data
         public GameRecordItem tmpChess {get; private set;}
+        public GameLogicMgr GameLogicMgr {get; private set;}
+        public GameRecordMgr GameRecordMgr {get; private set;}
     #endregion
     public void ClearTmpChess()
     {
@@ -29,7 +32,7 @@ public class GlobalMgr
 
     public void TryAddNewTmpChess(Vector2Int pos, int val)
     {
-        if (GameLogicMgr.Instance.IsChessValid(pos))
+        if (GameLogicMgr.IsChessValid(pos))
             tmpChess = new GameRecordItem(pos.y, pos.x, val);
         var mainUIView = PanelMgr.Instance.GetSingletonView(Type.GetType("MainUIPanelView")) as MainUIPanelView;
         mainUIView.UpdateMainUI();
@@ -37,16 +40,16 @@ public class GlobalMgr
 
     public void TryAddNewChess(Vector2Int pos, int val)
     {
-        GameLogicMgr.Instance.TryAddNewChess(pos, val);
+        GameLogicMgr.TryAddNewChess(pos, val);
         GlobalMgr.Instance.ClearTmpChess();
         var mainUIView = PanelMgr.Instance.GetSingletonView(Type.GetType("MainUIPanelView")) as MainUIPanelView;
         mainUIView.UpdateMainUI();
     }
 
-
-
     public void StartNewGame()
     {
+        GameRecordMgr = new GameRecordMgr();
+        GameLogicMgr = new GameLogicMgr(GameRecordMgr);
         var openMenuView = PanelMgr.Instance.GetSingletonView(Type.GetType("OpenMenuPanelView")) as OpenMenuPanelView;
         UI.SetActive(openMenuView, false);
         var mainUIView = PanelMgr.Instance.GetSingletonView(Type.GetType("MainUIPanelView")) as MainUIPanelView;

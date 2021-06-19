@@ -25,9 +25,10 @@ public class WinInfoPanelView : MonoBehaviour
     
     public void UpdateWinInfo()
     {
-        var recordMgr = GameRecordMgr.Instance;
-        var reason = GameRecordMgr.Instance.ResultItem.Reason;
-        var isBlackRound = GameLogicMgr.Instance.IsBlackRound();
+        var recordMgr = GlobalMgr.Instance.GameRecordMgr;
+        var logicMgr = GlobalMgr.Instance.GameLogicMgr;
+        var reason = recordMgr.ResultItem.Reason;
+        var isBlackRound = logicMgr.IsBlackRound();
         var subjectTxt = "黑方";
         if (isBlackRound
             || reason == ResultReasonEnum.Balanced)

@@ -30,7 +30,7 @@ public class MainUIPanelView : BaseSingletonView
     {
         // logic
         GlobalMgr.Instance.ClearTmpChess();
-        GameLogicMgr.Instance.StartNewLogicGame();
+        GlobalMgr.Instance.GameLogicMgr.StartNewLogicGame();
         // ui
         UI.SetActive(WinInfoPanel, false);
         if (Setting.showMode == Setting.ShowMode.Desktop)
@@ -65,9 +65,9 @@ public class MainUIPanelView : BaseSingletonView
     public void UpdateMainUI()
     {
         BoardPanel.UpdateChessBoard();
-        if (GameRecordMgr.Instance.IsRun)
+        if (GlobalMgr.Instance.GameRecordMgr.IsRun)
         {
-            if (GameLogicMgr.Instance.IsBlackRound())
+            if (GlobalMgr.Instance.GameLogicMgr.IsBlackRound())
             {
                 whiteInfoPanel.UpdateInfoView(false);
                 blackInfoPanel.UpdateInfoView(true);

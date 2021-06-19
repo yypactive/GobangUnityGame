@@ -33,21 +33,7 @@ public class GameRecordItem {
 }
 
 public class GameRecordMgr
-{
-    private static readonly GameRecordMgr _GameRecordMgr = new GameRecordMgr();
-
-    public static GameRecordMgr Instance
-    {
-        get
-        {
-            return _GameRecordMgr;
-        }
-    }
-
-    private GameRecordMgr() {
-
-    }
-    
+{    
     public Stack<GameRecordItem> GameRecordStack { get; private set;} = new Stack<GameRecordItem>();
     public List<Vector2Int> WinChessList { get; private set;} = new List<Vector2Int>(5);
     public GameResultItem ResultItem;

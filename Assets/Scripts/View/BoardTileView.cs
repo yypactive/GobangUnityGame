@@ -80,9 +80,9 @@ public class BoardTileView : MonoBehaviour
         var newBgState = BoardTileBgState.Normal;
         if (Pos == GlobalMgr.Instance.tmpChess?.Pos)
             newBgState = BoardTileBgState.CurrChess;
-        else if (GameRecordMgr.Instance.GetLastRecord()?.Pos == Pos)
+        else if (GlobalMgr.Instance.GameRecordMgr.GetLastRecord()?.Pos == Pos)
             newBgState = BoardTileBgState.LastChess;
-        else if (GameRecordMgr.Instance.WinChessList.Contains(Pos))
+        else if (GlobalMgr.Instance.GameRecordMgr.WinChessList.Contains(Pos))
             newBgState = BoardTileBgState.WinChess;
         else if (Pos.x % (GameLogicMgr.tileCnt / 3) == GameLogicMgr.tileCnt / 6 
             && Pos.y % (GameLogicMgr.tileCnt / 3) == GameLogicMgr.tileCnt / 6)
@@ -101,6 +101,6 @@ public class BoardTileView : MonoBehaviour
     {
         var mainUIPanelView = PanelMgr.Instance.GetSingletonView(
             Type.GetType("MainUIPanelView")) as MainUIPanelView;
-        mainUIPanelView.AddNewChess(Pos, GameRecordMgr.Instance.GetCurrRoundCnt());
+        mainUIPanelView.AddNewChess(Pos, GlobalMgr.Instance.GameRecordMgr.GetCurrRoundCnt());
     }
 }

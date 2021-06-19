@@ -70,7 +70,7 @@ public class BoardPanelView : BaseSingletonView
 
     public void UpdateChessBoard()
     {
-        var currRoundState = GameLogicMgr.Instance.GetCurrRoundBoardState();
+        var currRoundState = GlobalMgr.Instance.GameLogicMgr.GetCurrRoundBoardState();
         for (int i = 0; i < GameLogicMgr.tileCnt; ++i)
             for (int j = 0; j < GameLogicMgr.tileCnt; ++j)
                 tileViewMap[i][j].SetValue(currRoundState[i][j]);
