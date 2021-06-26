@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System;
+
 public static class UI {
     public static void SetActive(Component comp, bool isActive)
     {
@@ -28,5 +30,17 @@ public static class UI {
 
         if (image != null)
             image.sprite = sprite;
+    }
+
+    public static long GetCurrClientTimeStamp()
+    {
+        var ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
+        return Convert.ToInt64(ts.TotalSeconds);
+    }
+
+    public static long GetCurrClientMilliTimeStamp()
+    {
+        var ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
+        return Convert.ToInt64(ts.TotalMilliseconds);
     }
 }

@@ -24,6 +24,19 @@ public class GlobalMgr
         public GameRecordItem tmpChess {get; private set;}
         public GameLogicMgr GameLogicMgr {get; private set;}
         public GameRecordMgr GameRecordMgr {get; private set;}
+
+        public BaseAIEngine AIEngineBlack;
+        public BaseAIEngine AIEngineWhite;
+        public BaseAIEngine CurrRoundAIEngine {
+            get {
+                if (GameLogicMgr.IsBlackRound())
+                    return AIEngineBlack;
+                else
+                    return AIEngineWhite;
+            }
+        }
+
+
     #endregion
     public void ClearTmpChess()
     {
@@ -44,16 +57,26 @@ public class GlobalMgr
         GlobalMgr.Instance.ClearTmpChess();
         var mainUIView = PanelMgr.Instance.GetSingletonView(Type.GetType("MainUIPanelView")) as MainUIPanelView;
         mainUIView.UpdateMainUI();
+        if (IsAiRound())
+        {
+            CurrRoundAIEngine.TryAddNewChess();
+        }
     }
 
     public void StartNewGame()
     {
+        Setting.LogSetting();
         GameRecordMgr = new GameRecordMgr();
         GameLogicMgr = new GameLogicMgr(GameRecordMgr);
+        TrySetupAiEngine();
         var openMenuView = PanelMgr.Instance.GetSingletonView(Type.GetType("OpenMenuPanelView")) as OpenMenuPanelView;
         UI.SetActive(openMenuView, false);
         var mainUIView = PanelMgr.Instance.GetSingletonView(Type.GetType("MainUIPanelView")) as MainUIPanelView;
         mainUIView.StartNewGame();
+        if (IsAiRound())
+        {
+            CurrRoundAIEngine.TryAddNewChess();
+        }
     }
 
     public void SetUIGameVictory()
@@ -74,6 +97,30 @@ public class GlobalMgr
         var openMenuView = PanelMgr.Instance.GetSingletonView(Type.GetType("OpenMenuPanelView")) as OpenMenuPanelView;
         UI.SetActive(openMenuView, true);
         openMenuView.OnHistoryBtnClicked();
+    }
+
+    public void TrySetupAiEngine()
+    {
+        AIEngineBlack = null;
+        AIEngineWhite = null;
+        if (Setting.gameMode == Setting.GameMode.HumanVSAI)
+        {
+            AIEngineWhite = new BaseAIEngine();
+        }
+        else if (Setting.gameMode == Setting.GameMode.AIVSAI)
+        {
+            AIEngineBlack = new BaseAIEngine();
+            AIEngineWhite = new BaseAIEngine();
+        }
+    }
+
+    public bool IsAiRound()
+    {
+        if (Setting.gameMode == Setting.GameMode.HumanVSAI)
+            return !GameLogicMgr.IsBlackRound();
+        else if (Setting.gameMode == Setting.GameMode.AIVSAI)
+            return true;
+        return false;
     }
     
 }

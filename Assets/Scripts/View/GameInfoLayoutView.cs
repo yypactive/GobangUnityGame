@@ -17,6 +17,7 @@ public class GameInfoLayoutView : MonoBehaviour
     public Button ShrinkBtn;
 
 #endregion
+    private long startTime = UI.GetCurrClientTimeStamp();
 
     public void UpdateInfoView(bool isActive = false)
     {
@@ -30,6 +31,7 @@ public class GameInfoLayoutView : MonoBehaviour
         UI.SetActive(ConfirmBtn, Setting.addChessMode == Setting.AddChessMode.TwoStep);
         UI.SetActive(gameObject, isActive);
         OnShrinkClicked();
+        startTime = UI.GetCurrClientTimeStamp();
     }
 
     public void OnConfirmBtnClicked()
@@ -58,5 +60,15 @@ public class GameInfoLayoutView : MonoBehaviour
         UI.SetActive(SurrenderBtn, false);
         UI.SetActive(ShrinkBtn, false);
         UI.SetActive(MoreBtn, true);
+    }
+
+    void Update()
+    {
+        var currTime = UI.GetCurrClientTimeStamp();
+        var deltaTime = currTime - startTime;
+        var hour = deltaTime / 3600;
+        var min = deltaTime / 60;
+        var sec = deltaTime % 60;
+        TimerTxt.text = string.Format("{0}:{1}:{2}", hour, min, sec);
     }
 }

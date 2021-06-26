@@ -32,7 +32,7 @@ class Setting
     }
 
 
-    static public GameMode gameMode = (GameMode)0;
+    static public GameMode gameMode = (GameMode)1;
     static public RuleMode ruleMode = (RuleMode)1;
 
 #if UNITY_ANDROID
@@ -45,6 +45,12 @@ class Setting
     static public ShowMode showMode = (ShowMode)1;
     static public AddChessMode addChessMode = (AddChessMode)0;
 #endif
+
+    public static void LogSetting()
+    {
+        Debug.LogFormat("[Setting] GameMode: {0}\nShowMode: {1}\nshowMode: {2}\naddChessMode: {3}", 
+            gameMode, ruleMode, showMode, addChessMode);
+    }
 
     
 

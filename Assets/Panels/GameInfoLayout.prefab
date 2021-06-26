@@ -752,7 +752,7 @@ GameObject:
   - component: {fileID: 9093076656264439929}
   - component: {fileID: 5753646793066843933}
   m_Layer: 0
-  m_Name: TimerTitle
+  m_Name: TimerTxt
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1183,7 +1183,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TitleImg: {fileID: 185632791713191971}
   TitleTxt: {fileID: 2537552086442468071}
-  TimerTxt: {fileID: 7679046597940785164}
+  TimerTxt: {fileID: 5753646793066843933}
   ConfirmBtn: {fileID: 2326931271034428551}
   SurrenderBtn: {fileID: 1582092998759323743}
   MoreBtn: {fileID: 2540242359272250702}
@@ -1291,7 +1291,7 @@ GameObject:
   - component: {fileID: 8059711211514714653}
   - component: {fileID: 7679046597940785164}
   m_Layer: 0
-  m_Name: TimerTxt
+  m_Name: TimerTitle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

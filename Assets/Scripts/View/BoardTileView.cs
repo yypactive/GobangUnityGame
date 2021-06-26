@@ -99,6 +99,8 @@ public class BoardTileView : MonoBehaviour
 
     public void OnTileClicked()
     {
+        if (GlobalMgr.Instance.IsAiRound())
+            return;
         var mainUIPanelView = PanelMgr.Instance.GetSingletonView(
             Type.GetType("MainUIPanelView")) as MainUIPanelView;
         mainUIPanelView.AddNewChess(Pos, GlobalMgr.Instance.GameRecordMgr.GetCurrRoundCnt());
