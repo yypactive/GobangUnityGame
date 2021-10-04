@@ -88,12 +88,25 @@ public class GameLogicMgr
         return true;
     }
 
+    public bool HasNeighbor(Vector2Int pos, Vector2Int range)
+    {
+        int startY = Math.Max(pos.y - range.y, 0);
+        int endY = Math.Min(pos.y + range.y + 1, tileCnt);
+        int startX = Math.Max(pos.x - range.x, 0);
+        int endx = Math.Min(pos.x + range.x + 1, tileCnt);
+        for (int i = startY; i < endY; ++i)
+            for (int j = startX; j < endx; ++j)
+                if ( !(i == pos.y && j == pos.x) && CurrRoundBoardState[i][j] != 0)
+                    return true;
+        return false;
+    }
+
     public Vector2Int[] DirArray = {
-            new Vector2Int(0,1),
-            new Vector2Int(1,0),
-            new Vector2Int(1,1),
-            new Vector2Int(1,-1),
-        };
+        new Vector2Int(0,1),
+        new Vector2Int(1,0),
+        new Vector2Int(1,1),
+        new Vector2Int(1,-1),
+    };
 
     public bool CheckVictory(Vector2Int lastChessPos, int val)
     {
@@ -216,6 +229,79 @@ public class GameLogicMgr
             i = i + zeroIndex + 1;
         }
         return sum;
+    }
+
+    public void CheckCurrBoardState(Vector2Int centralChess, int val, out List<int> liveDict, out List<int> deadDict)
+    {
+        int[] array = new int [16];
+        liveDict = new List<int> (array);
+        deadDict = new List<int> (array);
+        for (int i = 0; i < DirArray.Length; i++)
+        {
+            var dir = DirArray[i];
+            var startPosArray = new List<Vector2Int>();
+            if (dir.x == 0)
+                for (int j = 0; j < tileCnt; j++) startPosArray.Add(new Vector2Int(j, 0));
+            else if (dir.y == 0)
+                for (int j = 0; j < tileCnt; j++) startPosArray.Add(new Vector2Int(0, j));
+            else if (dir.y > 0)
+            {
+                for (int j = 0; j < tileCnt - 5 + 1; j++) startPosArray.Add(new Vector2Int(j, 0));
+                for (int j = 1; j < tileCnt - 5 + 1; j++) startPosArray.Add(new Vector2Int(0, j));
+            }
+            else if (dir.y < 0)
+            {
+                for (int j = 0; j < tileCnt - 5 + 1; j++) startPosArray.Add(new Vector2Int(j, tileCnt - 1));
+                for (int j = 1; j < tileCnt - 5 + 1; j++) startPosArray.Add(new Vector2Int(0, j));
+            }
+            foreach (var startPos in startPosArray)
+            {   
+                var startX = startPos.x;
+                var startY = startPos.y;
+                var isLive = false;
+                var cnt = 0;
+                for (int k = 0;
+                    startX + k * dir.x < tileCnt
+                    && startY + k * dir.y >= 0
+                    && startY + k * dir.y < tileCnt;
+                    k++)
+                {
+                    var currX = startX + dir.x * k;
+                    var currY = startY + dir.y * k;
+                    var posVal = CurrRoundBoardState[currY][currX];
+                    if (centralChess.y == currY && centralChess.x == currX)
+                        posVal = val;
+                    var isEmpty = posVal == 0;
+                    var sameVal = posVal % 2 == val % 2;
+                    if (isEmpty)
+                    {
+                        if (cnt > 0)
+                        {
+                            if (isLive)
+                                liveDict[cnt] ++;
+                            else
+                                deadDict[cnt] ++;
+                        }
+                        isLive = true;
+                        cnt = 0;
+                    }
+                    else if (sameVal)
+                    {
+                        cnt ++;
+                    }
+                    else
+                    {
+                        if (cnt > 0)
+                            if (isLive)
+                                deadDict[cnt] ++;
+                        isLive = false;
+                        cnt = 0;
+                    }
+                }
+                if (cnt > 0)
+                    deadDict[cnt] ++;
+            }
+        }
     }
 
     public bool GetVictory(Vector2Int lastChessPos, int val, out Vector2Int victoryStartPos, out Vector2Int victoryDir)

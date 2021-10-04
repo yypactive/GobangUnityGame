@@ -116,6 +116,8 @@ public class GlobalMgr
 
     public bool IsAiRound()
     {
+        if (!GameRecordMgr.IsRun)
+            return false;
         if (Setting.gameMode == Setting.GameMode.HumanVSAI)
             return !GameLogicMgr.IsBlackRound();
         else if (Setting.gameMode == Setting.GameMode.AIVSAI)

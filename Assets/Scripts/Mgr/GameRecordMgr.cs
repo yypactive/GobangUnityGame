@@ -39,6 +39,16 @@ public class GameRecordMgr
     public GameResultItem ResultItem;
     public bool IsRun { get; private set; } = false;
 
+    public GameRecordMgr()
+    {
+        
+    }
+    public GameRecordMgr(GameRecordMgr mgr)
+    {
+        GameRecordStack = new Stack<GameRecordItem>(mgr.GameRecordStack);
+        IsRun = mgr.IsRun;
+    }
+
     public void Reset () {
         GameRecordStack.Clear();
         WinChessList.Clear();
@@ -71,11 +81,17 @@ public class GameRecordMgr
             return null;
     }
 
+    public int GetRecordCnt()
+    {
+        return GameRecordStack.Count;
+    }
+
     public int GetCurrRoundCnt()
     {
         return GameRecordStack.Count + 1;
     }
 
+# region strange
     public void GenerateWinChessList(Vector2Int startPos, Vector2Int dir)
     {
         WinChessList.Clear();
@@ -87,3 +103,4 @@ public class GameRecordMgr
     }
     
 }
+#endregion
