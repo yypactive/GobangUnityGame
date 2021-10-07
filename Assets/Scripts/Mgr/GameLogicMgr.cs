@@ -69,6 +69,8 @@ public class GameLogicMgr
 
     public List<List<int>> GetCurrRoundBoardState()
     {
+        // TODO
+        ClearOldGameState();
         var gameRecordStack = GameRecordMgr.GameRecordStack;
         foreach (var item in gameRecordStack)
         {
@@ -231,7 +233,7 @@ public class GameLogicMgr
         return sum;
     }
 
-    public void CheckCurrBoardState(Vector2Int centralChess, int val, out List<int> liveDict, out List<int> deadDict)
+    public void CheckCurrBoardState(int val, out List<int> liveDict, out List<int> deadDict)
     {
         int[] array = new int [16];
         liveDict = new List<int> (array);
@@ -269,8 +271,6 @@ public class GameLogicMgr
                     var currX = startX + dir.x * k;
                     var currY = startY + dir.y * k;
                     var posVal = CurrRoundBoardState[currY][currX];
-                    if (centralChess.y == currY && centralChess.x == currX)
-                        posVal = val;
                     var isEmpty = posVal == 0;
                     var sameVal = posVal % 2 == val % 2;
                     if (isEmpty)

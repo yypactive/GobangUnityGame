@@ -70,26 +70,30 @@ public class BaseAIEngine
     {
         var currRoundState = GlobalMgr.Instance.GameLogicMgr.GetCurrRoundBoardState();
         var potentialPosList = GetPotentialPosList();
-        Debug.Log(potentialPosList.Count);
+        // Debug.Log(potentialPosList.Count);
         var ran = new System.Random();
+        var bestVal = -1;
         if (potentialPosList.Count > 0)
             {
-                double bestVal = 0;
                 var currRound = engineRecordMgr.GetCurrRoundCnt();
                 foreach (var potentialPos in potentialPosList)
                 {
-                    var currVal = EvaluateCurrBoardState(potentialPos, currRound);
+                    // Debug.LogFormat("GetCurrRoundCnt: {0}", engineRecordMgr.GetCurrRoundCnt());
+                    engineRecordMgr.AddNewRecord(potentialPos.y, potentialPos.x, engineRecordMgr.GetCurrRoundCnt());
+                    var currVal = EvaluateCurrBoardState(currRound);
+                    // Debug.LogFormat("potentialPos: {0} val: {1}", potentialPos, currVal);
                     if (currVal > bestVal)
                     {
                         bestVal = currVal;
                         finalChessPos = potentialPos;
                     }
+                    ResetEngineRecordMgr();
                 }
             }
         else
             Debug.LogError("can not find pos");
         IsRun = false;
-        Debug.Log("pos val: " + EvaluateCurrBoardState(finalChessPos, engineRecordMgr.GetCurrRoundCnt()));
+        // Debug.Log("pos val: " + bestVal);
         return;
     }
 
@@ -115,18 +119,19 @@ public class BaseAIEngine
             else if (bRange2 && engineLogicMgr.HasNeighbor(pos, rangeTwo))
                 range2PosList.Add(pos);
         potentialPosList.AddRange(range2PosList);
-        Debug.Log(potentialPosList.ToString());
         return potentialPosList;
     }
 
-    protected double EvaluateCurrBoardState(Vector2Int newPos, int newVal)
+    protected int EvaluateCurrBoardState(int newVal)
     {
         // need update
         List<int> liveDict, deadDict;
-        engineLogicMgr.CheckCurrBoardState(newPos, newVal, out liveDict, out deadDict);
-        double result = 0;
+        engineLogicMgr.CheckCurrBoardState(newVal, out liveDict, out deadDict);
+        // Debug.LogFormat("liveDict: {0}", String.Join(" ", liveDict));
+        // Debug.LogFormat("deadDict: {0}", String.Join(" ", deadDict));
+        var result = 0;
         for (int i = 1; i < 6; i++)
-            result += result + liveDict[i] * Math.Pow(10, i) + deadDict[i] * Math.Pow(10, i - 1);
+            result += result + liveDict[i] * (int) Math.Pow(10, i) + deadDict[i] * (int) Math.Pow(10, i - 1);
         return result;
     }
 

@@ -105,12 +105,12 @@ public class GlobalMgr
         AIEngineWhite = null;
         if (Setting.gameMode == Setting.GameMode.HumanVSAI)
         {
-            AIEngineWhite = new BaseAIEngine();
+            AIEngineWhite = new MaxMinSearchAiEngine();
         }
         else if (Setting.gameMode == Setting.GameMode.AIVSAI)
         {
             AIEngineBlack = new BaseAIEngine();
-            AIEngineWhite = new BaseAIEngine();
+            AIEngineWhite = new MaxMinSearchAiEngine();
         }
     }
 
