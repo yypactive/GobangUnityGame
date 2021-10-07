@@ -14,14 +14,14 @@ public class MaxMinSearchAiEngine: BaseAIEngine
 
     protected Vector2Int MaxMinValueSearch(int deep)
     {
-        var bestVal = -1;
+        var bestVal = int.MinValue;
         var bestValPosList = new List<Vector2Int>();
         var potentialPosList = GetPotentialPosList(deep>=2);
         foreach (var pos in potentialPosList)
         {
             engineRecordMgr.AddNewRecord(pos.y, pos.x, engineRecordMgr.GetCurrRoundCnt());
             engineLogicMgr.GetCurrRoundBoardState();
-            var currVal = MinValueSearch(deep - 1);
+            var currVal = MinValueSearch(int.MaxValue, int.MinValue, deep - 1);
             Debug.LogFormat("pos: {0} currVal {1}", pos, currVal);
             if (currVal == bestVal)
                 bestValPosList.Add(pos);
@@ -37,7 +37,7 @@ public class MaxMinSearchAiEngine: BaseAIEngine
         var ran = new System.Random();
         return bestValPosList[ran.Next(bestValPosList.Count - 1)];
     }
-    private int MinValueSearch(int deep)
+    private int MinValueSearch(int alpha, int beta, int deep)
     {
         var lastRecord = engineRecordMgr.GetLastRecord();
         // Debug.LogFormat("deep: {0} currVal {1}", deep, engineRecordMgr.GetRecordCnt());
@@ -48,23 +48,28 @@ public class MaxMinSearchAiEngine: BaseAIEngine
             return val;
         }
         // TODO
-        var bestVal = 50000000;
+        var bestVal = int.MaxValue;
         var potentialPosList = GetPotentialPosList(deep>=2);
         foreach (var pos in potentialPosList)
         {
             engineRecordMgr.AddNewRecord(pos.y, pos.x, engineRecordMgr.GetCurrRoundCnt());
             engineLogicMgr.GetCurrRoundBoardState();
-            var currVal = MaxValueSearch(deep - 1);
+            var currVal = MaxValueSearch(Math.Min(bestVal, alpha), beta, deep - 1);
+            engineRecordMgr.RevokeLastRecord();
             if (currVal < bestVal)
             {
                 bestVal = currVal;
             }
-            engineRecordMgr.RevokeLastRecord();
+            // alpha-beta cut
+            if (currVal < beta)
+            {
+                break;
+            }
         }
         return bestVal;
     }
 
-    private int MaxValueSearch(int deep)
+    private int MaxValueSearch(int alpha, int beta, int deep)
     {
         var lastRecord = engineRecordMgr.GetLastRecord();
         var val = EvaluateCurrBoardState(lastRecord.Value + 1);
@@ -73,16 +78,21 @@ public class MaxMinSearchAiEngine: BaseAIEngine
         {
             return val;
         }
-        var bestVal = 0;
+        var bestVal = int.MinValue;
         var potentialPosList = GetPotentialPosList(deep>=2);
         foreach (var pos in potentialPosList)
         {
             engineRecordMgr.AddNewRecord(pos.y, pos.x, engineRecordMgr.GetCurrRoundCnt());
             engineLogicMgr.GetCurrRoundBoardState();
-            var currVal = MinValueSearch(deep - 1);
+            var currVal = MinValueSearch(alpha, Math.Max(bestVal, beta), deep - 1);
             if (currVal > bestVal)
             {
                 bestVal = currVal;
+            }
+            // alpha-beta cut
+            if (currVal > alpha)
+            {
+                break;
             }
             engineRecordMgr.RevokeLastRecord();
         }
