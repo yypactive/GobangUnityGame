@@ -53,6 +53,16 @@ public class BaseAIEngine
         IsRun = true;
     }
 
+    protected int MyRoundVal()
+    {
+        return currGameRecordCnt + 1;
+    }
+
+    protected int EnemyRoundVal()
+    {
+        return currGameRecordCnt + 2;
+    }
+
     protected virtual void ResetEngineRecordMgr()
     {
         var currCnt = engineRecordMgr.GetRecordCnt();
@@ -69,16 +79,15 @@ public class BaseAIEngine
     protected virtual void UpdateChessPos()
     {
         var currRoundState = GlobalMgr.Instance.GameLogicMgr.GetCurrRoundBoardState();
-        var potentialPosList = GetPotentialPosList();
+        var currRound = engineRecordMgr.GetCurrRoundCnt();
+        var potentialPosList = GetPotentialPosList(currRound);
         // Debug.Log(potentialPosList.Count);
         var ran = new System.Random();
         var bestVal = -1;
         if (potentialPosList.Count > 0)
             {
-                var currRound = engineRecordMgr.GetCurrRoundCnt();
                 foreach (var potentialPos in potentialPosList)
                 {
-                    // Debug.LogFormat("GetCurrRoundCnt: {0}", engineRecordMgr.GetCurrRoundCnt());
                     engineRecordMgr.AddNewRecord(potentialPos.y, potentialPos.x, engineRecordMgr.GetCurrRoundCnt());
                     var currVal = EvaluateCurrBoardState(currRound);
                     // Debug.LogFormat("potentialPos: {0} val: {1}", potentialPos, currVal);
@@ -97,10 +106,10 @@ public class BaseAIEngine
         return;
     }
 
-    protected List<Vector2Int> GetPotentialPosList(bool bRange2 = false)
+    protected List<Vector2Int> GetPotentialPosList(int roundVal, bool bRange2 = false)
     {
         List <Vector2Int> emptyPosList = new List <Vector2Int>();
-        var potentialPosList = new List<Vector2Int>();
+        var range1PosList = new List<Vector2Int>();
         var range2PosList = new List<Vector2Int>(); 
         var currRoundState = engineLogicMgr.GetCurrRoundBoardState();
         var rangeOne = new Vector2Int(1, 1);
@@ -112,14 +121,58 @@ public class BaseAIEngine
                 if(engineLogicMgr.IsChessValid(pos))
                     emptyPosList.Add(pos);
             }
-
+        var isMyRound = roundVal % 2 == MyRoundVal() % 2;
+        var fiveList = new List<Vector2Int>();
+        var fourList = new List<Vector2Int>();
+        var killChessList = new List<Vector2Int>();
+        var threeList = new List<Vector2Int>();
         foreach(var pos in emptyPosList)
+        {
+            var bRangeOne = false;
+            var bRangeTwo = false;
             if (engineLogicMgr.HasNeighbor(pos, rangeOne))
-                potentialPosList.Add(pos);
+                bRangeOne = true;
             else if (bRange2 && engineLogicMgr.HasNeighbor(pos, rangeTwo))
-                range2PosList.Add(pos);
-        potentialPosList.AddRange(range2PosList);
-        return potentialPosList;
+                bRangeTwo = true;
+            if (bRangeOne || bRangeTwo)
+            {
+                var myVal = engineLogicMgr.EvaluatePos(pos, roundVal, MyRoundVal());
+                var enemyVal = engineLogicMgr.EvaluatePos(pos, roundVal, EnemyRoundVal());
+                if (isMyRound && myVal >= 100)
+                    return new List<Vector2Int>{pos};
+                else if (!isMyRound && enemyVal >= 100)
+                    fiveList.Add(pos);
+                else if (isMyRound && myVal >= 10 && enemyVal < 10 || !isMyRound && enemyVal >= 10 && myVal < 10)
+                    fourList.Add(pos);
+                else if (isMyRound && myVal > 1 && enemyVal == 0 || !isMyRound && enemyVal > 1 && myVal == 0)
+                    killChessList.Add(pos);
+                else if (isMyRound && myVal > 0 && enemyVal == 0 || !isMyRound && enemyVal > 0 && myVal == 0)
+                    threeList.Add(pos);
+                else if (bRangeOne)
+                    range1PosList.Add(pos);
+                else if (bRangeTwo)
+                    range2PosList.Add(pos);
+            }
+        }
+        if (fiveList.Count > 0)
+        {
+            // Debug.LogFormat("fiveList: {0}", String.Join(" ", fiveList));
+            return fiveList;
+        }
+        if (fourList.Count > 0)
+        {
+            // Debug.LogFormat("fourList: {0}", String.Join(" ", fourList));
+            return fourList;
+        }
+        if (killChessList.Count > 0)
+        {
+            // Debug.LogFormat("killChessList: {0}", String.Join(" ", killChessList));
+            return killChessList;
+        }
+        threeList.AddRange(range1PosList);
+        threeList.AddRange(range2PosList);
+        
+        return threeList;
     }
 
     protected int EvaluateCurrBoardState(int newVal)
@@ -127,11 +180,21 @@ public class BaseAIEngine
         // need update
         List<int> liveDict, deadDict;
         engineLogicMgr.CheckCurrBoardState(newVal, out liveDict, out deadDict);
-        // Debug.LogFormat("liveDict: {0}", String.Join(" ", liveDict));
-        // Debug.LogFormat("deadDict: {0}", String.Join(" ", deadDict));
         var result = 0;
-        for (int i = 1; i < 6; i++)
-            result += result + liveDict[i] * (int) Math.Pow(10, i) + deadDict[i] * (int) Math.Pow(10, i - 1);
+        var baseVal = 10;
+        for (int i = 2; i < 6; i++)
+        {
+            result += liveDict[i] * baseVal * 100 + deadDict[i] * baseVal;
+            baseVal *= 100;
+        }
+        List<int> enemyLiveDict, enemyDeadDict;
+        engineLogicMgr.CheckCurrBoardState(newVal + 1, out enemyLiveDict, out enemyDeadDict);
+        baseVal = -10;
+        for (int i = 2; i < 6; i++)
+        {
+            result += enemyLiveDict[i] * baseVal * 100 + enemyDeadDict[i] * baseVal;
+            baseVal *= 100;
+        }
         return result;
     }
 

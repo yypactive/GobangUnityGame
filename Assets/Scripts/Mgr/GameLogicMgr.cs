@@ -103,7 +103,7 @@ public class GameLogicMgr
         return false;
     }
 
-    public Vector2Int[] DirArray = {
+    public static Vector2Int[] DirArray = {
         new Vector2Int(0,1),
         new Vector2Int(1,0),
         new Vector2Int(1,1),
@@ -114,10 +114,25 @@ public class GameLogicMgr
     {
         foreach (var dir in DirArray)
         {
-            var result = CheckContinuousChess(lastChessPos, val, dir, WinCnt, Setting.ruleMode == Setting.RuleMode.Balanced && !IsBlackRound());
+            var result = CheckContinuousChess(lastChessPos, val, val, dir, WinCnt, Setting.ruleMode == Setting.RuleMode.Balanced && !IsBlackRound());
             if (result) return true;
         }
         return false;
+    }
+
+    public int EvaluatePos(Vector2Int pos, int posVal, int roundVal)
+    {
+        var result = 0;
+        foreach (var dir in GameLogicMgr.DirArray)
+        {
+            var bTree = CheckDoubleThreeChess(pos, posVal, roundVal, dir);
+            if (bTree) result += 1;
+            var cntFour = CheckDoubleFourChess(pos, posVal, roundVal, dir);
+            result += cntFour * 10;
+            var bFive = CheckContinuousChess(pos, posVal, roundVal, dir, 5);
+            if (bFive) result += 100;
+        }
+        return result;
     }
 
     public bool CheckBalanceBreaker(Vector2Int lastChessPos, int val)
@@ -126,17 +141,26 @@ public class GameLogicMgr
         var sumFour = 0;
         foreach (var dir in DirArray)
         {
-            var resultThree = CheckDoubleThreeChess(lastChessPos, val, dir);
+            var resultThree = CheckDoubleThreeChess(lastChessPos, val, val, dir);
             sumThree = resultThree ? sumThree + 1 : sumThree;
             if (sumThree > 1)
+            {
+                Debug.LogError("三三禁手");
                 return true;
-            var cntFour = CheckDoubleFourChess(lastChessPos, val, dir);
+            }
+            var cntFour = CheckDoubleFourChess(lastChessPos, val, val, dir);
             sumFour = sumFour + cntFour;
             if (sumFour > 1)
+            {
+                Debug.LogError("四四禁手");
                 return true;
-            var resultSix = CheckContinuousChess(lastChessPos, val, dir, 6);
+            }
+            var resultSix = CheckContinuousChess(lastChessPos, val, val, dir, 6);
             if (resultSix)
+            {
+                Debug.LogError("长连禁手");
                 return true;
+            }
         }
         return false;
     }
@@ -156,7 +180,7 @@ public class GameLogicMgr
         return Math.Max(Math.Abs(startPos.x - endPos.x), Math.Abs(startPos.y - endPos.y)) + 1;
     }
 
-    public bool CheckContinuousChess(Vector2Int centralChess, int val, Vector2Int dir, int length, bool strictEqual = false)
+    public bool CheckContinuousChess(Vector2Int centralChess, int chessVal, int roundVal, Vector2Int dir, int length, bool strictEqual = false)
     {
         Vector2Int startPos, endPos;
         var realLength = GetRealStartAndEndPos(centralChess, dir, length, out startPos, out endPos);
@@ -165,8 +189,12 @@ public class GameLogicMgr
         {
             // if (i < 0 || i > tileCnt - 1 || j < 0 || j > tileCnt - 1)
                 // continue;
-            var posVal = CurrRoundBoardState[startPos.y + dir.y * i][startPos.x + dir.x * i];
-            if (posVal != 0 && posVal % 2 == val % 2)
+            var posY = startPos.y + dir.y * i;
+            var posX = startPos.x + dir.x * i;
+            var posVal = CurrRoundBoardState[posY][posX];
+            if (posY == centralChess.y && posX == centralChess.x)
+                posVal = chessVal;
+            if (posVal != 0 && posVal % 2 == roundVal % 2)
                 cnt++;
             else
             {
@@ -178,7 +206,7 @@ public class GameLogicMgr
         return false;
     } 
 
-    public bool CheckDoubleThreeChess(Vector2Int centralChess, int val, Vector2Int dir)
+    public bool CheckDoubleThreeChess(Vector2Int centralChess, int chessVal, int roundVal, Vector2Int dir)
     {
         var rangeLength = 4;
         var winLength = 6;
@@ -190,8 +218,20 @@ public class GameLogicMgr
             int zeroCnt = 0;
             for (int j = 0; j < array.Length; ++j)
             {
-                array[j] = CurrRoundBoardState[startPos.y + dir.y * (i + j)][startPos.x + dir.x * (i + j)];
+                var posY = startPos.y + dir.y * (i + j);
+                var posX = startPos.x + dir.x * (i + j);
+                var posVal = CurrRoundBoardState[posY][posX];
+                if (posY == centralChess.y && posX == centralChess.x)
+                {
+                    posVal = chessVal;
+                }
+                array[j] = posVal;
                 if (array[j] == 0) zeroCnt ++;
+                else if (posVal % 2 != roundVal % 2)
+                {
+                    zeroCnt = 0;
+                    break;
+                }
             }
             if (array[0] != 0 || array[winLength-1] != 0 )
                 continue;
@@ -201,7 +241,7 @@ public class GameLogicMgr
         return false;
     }
     
-    public int CheckDoubleFourChess(Vector2Int centralChess, int val, Vector2Int dir)
+    public int CheckDoubleFourChess(Vector2Int centralChess, int chessVal, int roundVal, Vector2Int dir)
     {
         var sum = 0;
         var rangeLength = 4;
@@ -214,11 +254,23 @@ public class GameLogicMgr
             int zeroIndex = -1;
             for (int j = 0; j < winLength; ++j)
             {
-                var posVal = CurrRoundBoardState[startPos.y + dir.y * (i + j)][startPos.x + dir.x * (i + j)];
+                var posY = startPos.y + dir.y * (i + j);
+                var posX = startPos.x + dir.x * (i + j);
+                var posVal = CurrRoundBoardState[posY][posX];
+                if (posY == centralChess.y && posX == centralChess.x)
+                {
+                    posVal = chessVal;
+                }
                 if (posVal == 0)
                 {
                     zeroCnt ++;
                     if (zeroIndex < 0) zeroIndex = j;
+                }
+                else if (posVal % 2 != roundVal % 2)
+                {
+                    zeroCnt = 0;
+                    zeroIndex = -1;
+                    break;
                 }
             }
             if (zeroCnt == 1)
@@ -293,6 +345,8 @@ public class GameLogicMgr
                     {
                         if (cnt > 0)
                             if (isLive)
+                                deadDict[cnt] ++;
+                            else if (cnt >= 5)
                                 deadDict[cnt] ++;
                         isLive = false;
                         cnt = 0;

@@ -33,7 +33,7 @@ class Setting
 
 
     static public GameMode gameMode = (GameMode)1;
-    static public RuleMode ruleMode = (RuleMode)1;
+    static public RuleMode ruleMode = (RuleMode)0;
 
 #if UNITY_ANDROID
     static public ShowMode showMode = (ShowMode)0;
