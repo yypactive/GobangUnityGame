@@ -17,13 +17,12 @@ public class MaxMinSearchAiEngine: BaseAIEngine
         var bestVal = int.MinValue;
         var bestValPosList = new List<Vector2Int>();
         var currRound = engineRecordMgr.GetCurrRoundCnt();
-        var potentialPosList = GetPotentialPosList(currRound, deep>=2);
+        var potentialPosList = GetPotentialPosList(currRound, deep>=2, true);
         Debug.LogFormat("potentialPosList: {0}\n{1}", potentialPosList.Count, String.Join(" ", potentialPosList));
         foreach (var pos in potentialPosList)
         {
-            engineRecordMgr.AddNewRecord(pos.y, pos.x, currRound);
-            engineLogicMgr.GetCurrRoundBoardState();
-            var currVal = MinValueSearch(int.MaxValue, int.MinValue, deep - 1);
+            engineLogicMgr.AddNewRecord(pos.y, pos.x, currRound);
+            var currVal = MinValueSearch(int.MaxValue, bestVal, deep - 1);
             Debug.LogFormat("Max deep: {0} pos: {1} val: {2}", deep,  pos, currVal);
             if (currVal == bestVal)
                 bestValPosList.Add(pos);
@@ -34,7 +33,7 @@ public class MaxMinSearchAiEngine: BaseAIEngine
                 bestValPosList.Add(pos);
             }
             // TODO
-            engineRecordMgr.RevokeLastRecord();
+            engineLogicMgr.RevokeLastRecord();
         }
         Debug.LogFormat("bestVal: {0}", bestVal);
         var ran = new System.Random();
@@ -56,12 +55,11 @@ public class MaxMinSearchAiEngine: BaseAIEngine
         var potentialPosList = GetPotentialPosList(currRound, deep>=2);
         foreach (var pos in potentialPosList)
         {
-            engineRecordMgr.AddNewRecord(pos.y, pos.x, currRound);
-            engineLogicMgr.GetCurrRoundBoardState();
+            engineLogicMgr.AddNewRecord(pos.y, pos.x, currRound);
             alpha = Math.Min(bestVal, alpha);
             var currVal = MaxValueSearch(alpha, beta, deep - 1);
             // Debug.LogFormat("Min deep: {0} pos: {1} val: {2}", deep,  pos, currVal);
-            engineRecordMgr.RevokeLastRecord();
+            engineLogicMgr.RevokeLastRecord();
             if (currVal < bestVal)
             {
                 bestVal = currVal;
@@ -89,12 +87,11 @@ public class MaxMinSearchAiEngine: BaseAIEngine
         var potentialPosList = GetPotentialPosList(currRound, deep>=2);
         foreach (var pos in potentialPosList)
         {
-            engineRecordMgr.AddNewRecord(pos.y, pos.x, currRound);
-            engineLogicMgr.GetCurrRoundBoardState();
+            engineLogicMgr.AddNewRecord(pos.y, pos.x, currRound);
             beta =  Math.Max(bestVal, beta);
             var currVal = MinValueSearch(alpha, beta, deep - 1);
             // Debug.LogFormat("Max deep: {0} pos: {1} val: {2}", deep,  pos, currVal);
-            engineRecordMgr.RevokeLastRecord();
+            engineLogicMgr.RevokeLastRecord();
             if (currVal > bestVal)
             {
                 bestVal = currVal;

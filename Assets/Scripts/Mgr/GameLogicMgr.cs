@@ -47,8 +47,8 @@ public class GameLogicMgr
     {
         if (!IsChessValid(pos))
             return false;
-        GameRecordMgr.AddNewRecord(pos.y, pos.x, val);
-        GetCurrRoundBoardState();
+        AddNewRecord(pos.y, pos.x, val);
+        // GetCurrRoundBoardState();
         if (CheckVictory(pos, val))
         {
             // GlobalMgr.Instance.GameRecordMgr.GenerateWinChessList(startPos, dir);
@@ -59,6 +59,18 @@ public class GameLogicMgr
             SetGameVictory(ResultReasonEnum.Balanced);
         }
         return true;
+    }
+
+    public void AddNewRecord(int _row, int _col, int _value)
+    {
+        GameRecordMgr.AddNewRecord(_row, _col, _value);
+        CurrRoundBoardState[_row][_col] = _value;
+    }
+
+    public void RevokeLastRecord()
+    {
+        var lastRecord = GameRecordMgr.RevokeLastRecord();
+        CurrRoundBoardState[lastRecord.Pos.y][lastRecord.Pos.x] = 0;
     }
 
     public bool IsBlackRound()
