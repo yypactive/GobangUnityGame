@@ -37,6 +37,8 @@ public class BaseAIEngine
             var currTime = UI.GetCurrClientMilliTimeStamp();
             if (!IsRun || currTime - startTime > waitTime * 1000)
             {
+                var endTime = UI.GetCurrClientMilliTimeStamp();
+                Debug.LogFormat("#BaseAIEngine# endTime: {0} deltaTime {1}", endTime, endTime - startTime);
                 mainThreadSynContext.Post(
                     new SendOrPostCallback(_RealAddNewChess), null);
                 return;
@@ -88,7 +90,8 @@ public class BaseAIEngine
                 foreach (var potentialPos in potentialPosList)
                 {
                     engineLogicMgr.AddNewRecord(potentialPos.y, potentialPos.x, engineRecordMgr.GetCurrRoundCnt());
-                    var currVal = EvaluateCurrBoardState(currRound);
+                    List<int> liveDict, deadDict, enemyLiveDict, enemyDeadDict;
+                    var currVal = EvaluateCurrBoardState(engineLogicMgr, currRound, out liveDict, out deadDict, out enemyLiveDict, out enemyDeadDict);
                     // Debug.LogFormat("potentialPos: {0} val: {1}", potentialPos, currVal);
                     if (currVal > bestVal)
                     {
@@ -105,7 +108,7 @@ public class BaseAIEngine
         return;
     }
 
-    protected List<Vector2Int> GetPotentialPosList(int roundVal, bool bRange2 = false, bool showLog = false)
+    protected List<Vector2Int> GetPotentialPosList(int roundVal, int enemyVal = 0, bool bRange2 = false, bool showLog = false)
     {
         List <Vector2Int> emptyPosList = new List <Vector2Int>();
         var range1PosList = new List<Vector2Int>();
@@ -123,12 +126,6 @@ public class BaseAIEngine
         var fourList = new List<Vector2Int>();
         var killChessList = new List<Vector2Int>();
         var threeList = new List<Vector2Int>();
-        //TODO FIX BUG enemyVal is useless
-        List<int> enemyLiveDict, enemyDeadDict;
-        engineLogicMgr.CheckCurrBoardState(roundVal + 1, out enemyLiveDict, out enemyDeadDict);
-        var enemyVal = 100 * (enemyLiveDict[5] + enemyDeadDict[5]) 
-                    + 10 * (enemyLiveDict[4] + enemyDeadDict[4]) 
-                    + enemyLiveDict[3];
         foreach(var pos in emptyPosList)
         {
             var bRangeOne = false;
@@ -178,25 +175,25 @@ public class BaseAIEngine
     }
 
     static public Dictionary<int, int> liveValDict = new Dictionary<int, int>{
-        { 2, 10 },
-        { 3, 1000 },
+        { 2, 100 },
+        { 3, 45000 },
         { 4, 100000 },
         { 5, 10000000 },
     };
 
     static public Dictionary<int, int> deadValDict = new Dictionary<int, int>{
-        { 3, 100 },
-        { 4, 10000 },
+        { 3, 10 },
+        { 4, 60000 },
         { 5, 10000000 },
     };
 
-    protected int EvaluateCurrBoardState(int newVal)
+    static public int EvaluateCurrBoardState(GameLogicMgr gameLogicMgr, int newVal, 
+                                            out List<int> liveDict, out List<int> deadDict, 
+                                            out List<int> enemyLiveDict, out List<int> enemyDeadDict)
     {
         // need update
-        List<int> liveDict, deadDict;
-        engineLogicMgr.CheckCurrBoardState(newVal, out liveDict, out deadDict);
-        List<int> enemyLiveDict, enemyDeadDict;
-        engineLogicMgr.CheckCurrBoardState(newVal + 1, out enemyLiveDict, out enemyDeadDict);
+        gameLogicMgr.CheckCurrBoardState(newVal, out liveDict, out deadDict);
+        gameLogicMgr.CheckCurrBoardState(newVal + 1, out enemyLiveDict, out enemyDeadDict);
         var result = 0;
         for (int i = 2; i < 6; i++)
         {

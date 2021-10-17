@@ -17,8 +17,13 @@ public class MaxMinSearchAiEngine: BaseAIEngine
         var bestVal = int.MinValue;
         var bestValPosList = new List<Vector2Int>();
         var currRound = engineRecordMgr.GetCurrRoundCnt();
-        var potentialPosList = GetPotentialPosList(currRound, deep>=2, true);
-        Debug.LogFormat("potentialPosList: {0}\n{1}", potentialPosList.Count, String.Join(" ", potentialPosList));
+        List<int> liveDict, deadDict, enemyLiveDict, enemyDeadDict;
+        var val = EvaluateCurrBoardState(engineLogicMgr, MyRoundVal(), out liveDict, out deadDict, out enemyLiveDict, out enemyDeadDict);
+        var enemyVal = 100 * (enemyLiveDict[5] + enemyDeadDict[5]) 
+            + 10 * (enemyLiveDict[4] + enemyDeadDict[4]) 
+            + enemyLiveDict[3];
+        var potentialPosList = GetPotentialPosList(currRound, enemyVal, false, true);
+        Debug.LogFormat("potentialPosList: {0} {1}\n{2}", potentialPosList.Count, enemyVal, String.Join(" ", potentialPosList));
         foreach (var pos in potentialPosList)
         {
             engineLogicMgr.AddNewRecord(pos.y, pos.x, currRound);
@@ -43,8 +48,11 @@ public class MaxMinSearchAiEngine: BaseAIEngine
     private int MinValueSearch(int alpha, int beta, int deep)
     {
         var lastRecord = engineRecordMgr.GetLastRecord();
-        // Debug.LogFormat("deep: {0} currVal {1}", deep, engineRecordMgr.GetRecordCnt());
-        var val = EvaluateCurrBoardState(lastRecord.Value);
+        List<int> liveDict, deadDict, enemyLiveDict, enemyDeadDict;
+        var val = EvaluateCurrBoardState(engineLogicMgr, MyRoundVal(), out liveDict, out deadDict, out enemyLiveDict, out enemyDeadDict);
+        var enemyVal = 100 * (enemyLiveDict[5] + enemyDeadDict[5]) 
+            + 10 * (enemyLiveDict[4] + enemyDeadDict[4]) 
+            + enemyLiveDict[3];
         if (deep <= 0 || engineLogicMgr.CheckVictory(lastRecord.Pos, lastRecord.Value))
         {
             return val;
@@ -52,7 +60,7 @@ public class MaxMinSearchAiEngine: BaseAIEngine
         // TODO
         var bestVal = int.MaxValue;
         var currRound = engineRecordMgr.GetCurrRoundCnt();
-        var potentialPosList = GetPotentialPosList(currRound, deep>=2);
+        var potentialPosList = GetPotentialPosList(currRound, enemyVal);
         foreach (var pos in potentialPosList)
         {
             engineLogicMgr.AddNewRecord(pos.y, pos.x, currRound);
@@ -77,14 +85,18 @@ public class MaxMinSearchAiEngine: BaseAIEngine
     {
         var lastRecord = engineRecordMgr.GetLastRecord();
         // Debug.LogFormat("Max Evaluate: {0} currVal {1}", lastRecord.Value + 1, val);
-        var val = EvaluateCurrBoardState(lastRecord.Value + 1);
+        List<int> liveDict, deadDict, enemyLiveDict, enemyDeadDict;
+        var val = EvaluateCurrBoardState(engineLogicMgr, MyRoundVal(), out liveDict, out deadDict, out enemyLiveDict, out enemyDeadDict);
+        var enemyVal = 100 * (enemyLiveDict[5] + enemyDeadDict[5]) 
+            + 10 * (enemyLiveDict[4] + enemyDeadDict[4]) 
+            + enemyLiveDict[3];
         if (deep <= 0 || engineLogicMgr.CheckVictory(lastRecord.Pos, lastRecord.Value))
         {
             return val;
         }
         var bestVal = int.MinValue;
         var currRound = engineRecordMgr.GetCurrRoundCnt();
-        var potentialPosList = GetPotentialPosList(currRound, deep>=2);
+        var potentialPosList = GetPotentialPosList(currRound, enemyVal);
         foreach (var pos in potentialPosList)
         {
             engineLogicMgr.AddNewRecord(pos.y, pos.x, currRound);
