@@ -11,6 +11,7 @@ public class BaseAIEngine
     protected GameRecordMgr engineRecordMgr;
     private int currGameRecordCnt;
     protected GameLogicMgr engineLogicMgr;
+    protected List<int> liveDict, deadDict, enemyLiveDict, enemyDeadDict;
     public bool IsRun {get; protected set;}
     private SynchronizationContext mainThreadSynContext;
     protected Vector2Int finalChessPos;
@@ -52,6 +53,11 @@ public class BaseAIEngine
         currGameRecordCnt = GlobalMgr.Instance.GameRecordMgr.GameRecordStack.Count;
         engineLogicMgr = new GameLogicMgr(engineRecordMgr);
         engineLogicMgr.GetCurrRoundBoardState();
+        int[] array = new int [16];
+        liveDict = new List<int>(array);
+        deadDict = new List<int>(array);
+        enemyLiveDict = new List<int>(array);
+        enemyDeadDict = new List<int>(array);
         IsRun = true;
     }
 
@@ -90,9 +96,8 @@ public class BaseAIEngine
                 foreach (var potentialPos in potentialPosList)
                 {
                     engineLogicMgr.AddNewRecord(potentialPos.y, potentialPos.x, engineRecordMgr.GetCurrRoundCnt());
-                    List<int> liveDict, deadDict, enemyLiveDict, enemyDeadDict;
-                    var currVal = EvaluateCurrBoardState(engineLogicMgr, currRound, out liveDict, out deadDict, out enemyLiveDict, out enemyDeadDict);
-                    // Debug.LogFormat("potentialPos: {0} val: {1}", potentialPos, currVal);
+                    var currVal = EvaluateCurrBoardState(engineLogicMgr, currRound, 
+                        ref liveDict, ref deadDict, ref enemyLiveDict, ref enemyDeadDict);
                     if (currVal > bestVal)
                     {
                         bestVal = currVal;
@@ -137,8 +142,8 @@ public class BaseAIEngine
             if (bRangeOne || bRangeTwo)
             {
                 var currRoundVal = engineLogicMgr.EvaluatePos(pos, roundVal, roundVal);
-                if (showLog && currRoundVal > 0)
-                    Debug.LogFormat("pos: {0} currRoundVal: {1} ", pos, currRoundVal);
+                // if (showLog && currRoundVal > 0)
+                //     Debug.LogFormat("pos: {0} currRoundVal: {1} ", pos, currRoundVal);
                 if (currRoundVal >= 100)
                     return new List<Vector2Int>{pos};
                 else if (currRoundVal >= 10 && enemyVal < 10)
@@ -182,26 +187,37 @@ public class BaseAIEngine
     };
 
     static public Dictionary<int, int> deadValDict = new Dictionary<int, int>{
+        { 2, 0 },
         { 3, 10 },
         { 4, 60000 },
         { 5, 10000000 },
     };
 
     static public int EvaluateCurrBoardState(GameLogicMgr gameLogicMgr, int newVal, 
-                                            out List<int> liveDict, out List<int> deadDict, 
-                                            out List<int> enemyLiveDict, out List<int> enemyDeadDict)
+                                            ref List<int> liveDict, ref List<int> deadDict, 
+                                            ref List<int> enemyLiveDict, ref List<int> enemyDeadDict)
     {
         // need update
-        gameLogicMgr.CheckCurrBoardState(newVal, out liveDict, out deadDict);
-        gameLogicMgr.CheckCurrBoardState(newVal + 1, out enemyLiveDict, out enemyDeadDict);
+        gameLogicMgr.CheckCurrBoardState(newVal, ref liveDict, ref deadDict);
+        gameLogicMgr.CheckCurrBoardState(newVal + 1, ref enemyLiveDict, ref enemyDeadDict);
+        // Debug.LogFormat("val: {0} liveDict: {1}", newVal, String.Join(" ", liveDict));
+        // Debug.LogFormat("val: {0} deadDict: {1}", newVal, String.Join(" ", deadDict));
+        // Debug.LogFormat("val: {0} enemyLiveDict: {1}", newVal + 1, String.Join(" ", enemyLiveDict));
+        // Debug.LogFormat("val: {0} enemyDeadDict: {1}", newVal + 1, String.Join(" ", enemyDeadDict));
+        var max = 2;
+        var enemyMax = 2;
+        for (int i = 0; i < 6; i++)
+        {
+            if (liveDict[i] + deadDict[i] > 0)
+                max = i > max ? i : max;
+            if (enemyLiveDict[i] + enemyDeadDict[i] > 0)
+                enemyMax = i > enemyMax ? i : enemyMax;
+        }
         var result = 0;
         for (int i = 2; i < 6; i++)
         {
-            result += (liveDict[i] - enemyLiveDict[i]) * liveValDict[i];
-        }
-        for (int i = 3; i < 6; i++)
-        {
-            result += (deadDict[i] - enemyDeadDict[i]) * deadValDict[i];
+            result += liveDict[i] * liveValDict[i] + deadDict[i] * deadValDict[i];
+            result -= enemyLiveDict[i] * liveValDict[i] + enemyDeadDict[i] * deadValDict[i];
         }
         return result;
     }
@@ -209,6 +225,12 @@ public class BaseAIEngine
     private void _RealAddNewChess(object state)
     {
         GlobalMgr.Instance.TryAddNewChess(finalChessPos, GlobalMgr.Instance.GameRecordMgr.GetCurrRoundCnt());
+        // var newVal = GlobalMgr.Instance.GameRecordMgr.GetCurrRoundCnt();
+        // GlobalMgr.Instance.GameLogicMgr.CheckCurrBoardState(newVal - 1, 
+        //     ref GlobalMgr.Instance.GameLogicMgr.liveDict, 
+        //     ref GlobalMgr.Instance.GameLogicMgr.deadDict);
+        // Debug.LogFormat("AI val: {0} liveDict: {1}", newVal - 1, String.Join(" ", GlobalMgr.Instance.GameLogicMgr.liveDict));
+        // Debug.LogFormat("AI val: {0} deadDict: {1}", newVal - 1, String.Join(" ", GlobalMgr.Instance.GameLogicMgr.deadDict));
     }
 
     
