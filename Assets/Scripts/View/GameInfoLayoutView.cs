@@ -45,7 +45,7 @@ public class GameInfoLayoutView : MonoBehaviour
 
     public void OnSurrenderBtnClicked()
     {
-        GlobalMgr.Instance.GameLogicMgr.SetGameVictory(ResultReasonEnum.Normal);
+        GlobalMgr.Instance.GameLogicMgr.SetGameVictory(ResultReasonEnum.Surrender);
     }
 
     public void OnMoreBtnClicked()
