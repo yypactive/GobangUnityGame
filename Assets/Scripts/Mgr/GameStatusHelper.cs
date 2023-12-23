@@ -30,7 +30,7 @@ public class GameStatusHelper
 
     public void CheckCurrBoardState(int val, ref List<int> liveDict, ref List<int> deadDict)
     {
-
+        // clear data
         for (int i = 0; i < liveDict.Count; i++)
             liveDict[i] = 0;
         for (int i = 0; i < deadDict.Count; i++)
@@ -83,13 +83,19 @@ public class GameStatusHelper
         endPosArray.Clear();
         if (dir.x == 0)
         {
-            for (int i = realMinX; i <= realMaxX; i++) startPosArray.Add(new Vector2Int(i, minY));
-            for (int i = realMinX; i <= realMaxX; i++) endPosArray.Add(new Vector2Int(i, maxY));
+            for (int i = realMinX; i <= realMaxX; i++)
+            {
+                startPosArray.Add(new Vector2Int(i, minY));
+                endPosArray.Add(new Vector2Int(i, maxY));
+            }
         }
         else if (dir.y == 0)
         {
-            for (int i = realMinY; i <= realMaxY; i++) startPosArray.Add(new Vector2Int(minX, i));
-            for (int i = realMinY; i <= realMaxY; i++) endPosArray.Add(new Vector2Int(maxX, i));
+            for (int i = realMinY; i <= realMaxY; i++)
+            {
+                startPosArray.Add(new Vector2Int(minX, i));
+                endPosArray.Add(new Vector2Int(maxX, i));
+            }
         }
         else if (dir.y > 0)
         {
@@ -120,7 +126,7 @@ public class GameStatusHelper
             }
         }
     }
-    public void CheckOneLineStatus(int val, Vector2Int dir, ref List<int> liveDict, ref List<int> deadDict)
+    public void OldCheckOneLineStatus(int val, Vector2Int dir, ref List<int> liveDict, ref List<int> deadDict)
     {
         var CurrRoundBoardState = GameLogicMgr.CurrRoundBoardState;
         for (int i = 0; i < startPosArray.Count; i++)
@@ -263,6 +269,123 @@ public class GameStatusHelper
                 
             }
             SaveLastIndex();
+        }
+    }
+
+    public static Dictionary<int, float> hash5Table = new Dictionary<int, float>
+    {
+        {0b00011     , 2},
+        {0b11000     , 2},
+        {0b10100     , 2},
+        {0b00101     , 2},
+        {0b01100     , 2.5f},
+        {0b00110     , 2.5f},
+        {0b01010     , 2.5f},
+        {0b11100     , 3},
+        {0b11010     , 3},
+        {0b10110     , 3},
+        {0b01110     , 3.5f},
+        {0b01011     , 3},
+        {0b01101     , 3},
+        {0b00111     , 3},
+        {0b11101     , 4},
+        {0b11011     , 4},
+        {0b10111     , 4},
+        {0b11110     , 4},
+        {0b01111     , 4},
+        {0b11111     , 5.5f}
+    };
+
+    public static Dictionary<int, float> hash6Table = new Dictionary<int, float>
+    {
+        {0b010110    , 3.5f},
+        {0b011010    , 3.5f},
+        {0b011110    , 4.5f},
+        {0b111111    , 6.5f}
+    };
+
+    public void CheckOneLineStatus(int val, Vector2Int dir, ref List<int> liveDict, ref List<int> deadDict)
+    {
+        var CurrRoundBoardState = GameLogicMgr.CurrRoundBoardState;
+        for (int i = 0; i < startPosArray.Count; i++)
+        {   
+            var startPos = startPosArray[i];
+            var endPos = endPosArray[i];
+            var startX = startPos.x;
+            var startY = startPos.y;
+            var arrayLength = Math.Max(endPos.x - startX, endPos.y - startY) + 1;
+            ClearLastFlag();
+            oneLineLiveArray = liveDict;
+            oneLineDeadArray = deadDict;
+            // reset
+            var currLength = 0;
+            var currVal = 0F;
+            var currHash5Key = 0;
+            var currHash6Key = 0;
+            for (int j = 0; j < arrayLength; j++)
+            {            
+                var posY = startPos.y + dir.y * j;
+                var posX = startPos.x + dir.x * j;
+                var posVal = CurrRoundBoardState[posY][posX];
+                var empty = posVal == 0;
+
+                var diffVal = !empty && posVal % 2 != val % 2;
+                // split array by diffVal
+                if (diffVal)
+                {
+                    // record result
+                    if (currVal > 0)
+                    {
+                        var realVal = (int)currVal;
+                        var isAlive = currVal > realVal + 0.1;
+                        if (isAlive)
+                            oneLineLiveArray[realVal] ++;
+                        else
+                            oneLineDeadArray[realVal] ++;
+                    }
+                    // reset
+                    currLength = 0;
+                    currVal = 0;
+                    currHash5Key = 0;
+                    currHash6Key = 0;
+                }
+                else
+                {
+                    currLength++;
+                    var bitVal = empty ? 0 : 1;
+                    currHash5Key = ((currHash5Key & 0b11111) << 1) + bitVal;
+                    currHash6Key = ((currHash6Key & 0b111111) << 1) + bitVal;
+                    // check hash 5
+                    if (currLength >= 5)
+                    {
+                        if (hash5Table.ContainsKey(currHash5Key))
+                        {
+                            var hashVal = hash5Table[currHash5Key];
+                            currVal = currVal > hashVal ? currVal : hashVal;
+                        }
+
+                    }
+                    // check hash 6
+                    if (currLength >= 6)
+                    {
+                        if (hash6Table.ContainsKey(currHash6Key))
+                        {
+                            var hashVal = hash6Table[currHash6Key];
+                            currVal = currVal > hashVal ? currVal : hashVal;
+                        }
+                    }   
+                }           
+            }
+            // record result
+            if (currVal > 0)
+            {
+                var realVal = (int)currVal;
+                var isAlive = currVal > realVal + 0.1;
+                if (isAlive)
+                    oneLineLiveArray[realVal] ++;
+                else
+                    oneLineDeadArray[realVal] ++;
+            }
         }
     }
 

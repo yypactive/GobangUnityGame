@@ -67,11 +67,16 @@ public class GlobalMgr
             GameLogicMgr.CheckCurrBoardState(newVal - 1, 
                 ref GameLogicMgr.liveDict, 
                 ref GameLogicMgr.deadDict);
-            Debug.LogFormat("val: {0} liveDict: {1} \n \t\t deadDict: {2}", newVal - 1, String.Join(" ", GameLogicMgr.liveDict), String.Join(" ", GameLogicMgr.deadDict));
-            GameLogicMgr.CheckCurrBoardState(newVal, 
-                ref GameLogicMgr.liveDict, 
+            var liveStr = String.Join(" ", GameLogicMgr.liveDict);
+            var deadStr = String.Join(" ", GameLogicMgr.deadDict);
+            GameLogicMgr.CheckCurrBoardState(newVal,
+                ref GameLogicMgr.liveDict,
                 ref GameLogicMgr.deadDict);
-            Debug.LogFormat("val: {0} enemyLiveDict: {1} \n \t\t enemyDeadDict: {2}", newVal, String.Join(" ", GameLogicMgr.liveDict), String.Join(" ", GameLogicMgr.deadDict));
+            var enemyLiveStr = String.Join(" ", GameLogicMgr.liveDict);
+            var enemyDeadStr = String.Join(" ", GameLogicMgr.deadDict);
+            Debug.LogFormat(
+                "val: {0} liveDict: {1} \n \t deadDict: {2} \n \t enemyLiveDict: {3} \n \t enemyDeadDict: {4}", 
+                newVal - 1, liveStr, deadStr, enemyLiveStr, enemyDeadStr);
         }
     }
 

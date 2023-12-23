@@ -37,10 +37,10 @@ class Setting
 
 #if UNITY_ANDROID
     static public ShowMode showMode = (ShowMode)0;
-    static public AddChessMode addChessMode = (AddChessMode)0;
+    static public AddChessMode addChessMode = (AddChessMode)1;
 #elif UNITY_IPHONE
     static public ShowMode showMode = (ShowMode)0;
-    static public AddChessMode addChessMode = (AddChessMode)0;
+    static public AddChessMode addChessMode = (AddChessMode)1;
 #else
     static public ShowMode showMode = (ShowMode)1;
     static public AddChessMode addChessMode = (AddChessMode)0;

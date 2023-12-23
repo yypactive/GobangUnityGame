@@ -15,6 +15,9 @@ public class BaseAIEngine
     public bool IsRun {get; protected set;}
     private SynchronizationContext mainThreadSynContext;
     protected Vector2Int finalChessPos;
+    // log
+    public int searchCnt = 0;
+    public int cutCnt = 0;
 
     public BaseAIEngine ()
     {
@@ -39,7 +42,8 @@ public class BaseAIEngine
             if (!IsRun || currTime - startTime > waitTime * 1000)
             {
                 var endTime = UI.GetCurrClientMilliTimeStamp();
-                Debug.LogFormat("#BaseAIEngine# endTime: {0} deltaTime {1}", endTime, endTime - startTime);
+                Debug.LogFormat("#BaseAIEngine# endTime: {0} deltaTime: {1}\n \t searchCnt: {2} cutCnt: {3}", 
+                    endTime, endTime - startTime, searchCnt, cutCnt);
                 mainThreadSynContext.Post(
                     new SendOrPostCallback(_RealAddNewChess), null);
                 return;
@@ -86,6 +90,8 @@ public class BaseAIEngine
 
     protected virtual void UpdateChessPos()
     {
+        searchCnt = 0;
+        cutCnt = 0;
         var currRound = engineRecordMgr.GetCurrRoundCnt();
         var potentialPosList = GetPotentialPosList(currRound);
         // Debug.Log(potentialPosList.Count);
@@ -96,6 +102,7 @@ public class BaseAIEngine
                 foreach (var potentialPos in potentialPosList)
                 {
                     engineLogicMgr.AddNewRecord(potentialPos.y, potentialPos.x, engineRecordMgr.GetCurrRoundCnt());
+                    searchCnt++;
                     var currVal = EvaluateCurrBoardState(engineLogicMgr, currRound, 
                         ref liveDict, ref deadDict, ref enemyLiveDict, ref enemyDeadDict);
                     if (currVal > bestVal)
@@ -113,6 +120,7 @@ public class BaseAIEngine
         return;
     }
 
+    // TODO: update this func
     protected List<Vector2Int> GetPotentialPosList(int roundVal, int enemyVal = 0, bool bRange2 = false, bool showLog = false)
     {
         List <Vector2Int> emptyPosList = new List <Vector2Int>();
@@ -193,7 +201,7 @@ public class BaseAIEngine
         { 5, 10000000 },
     };
 
-    static public int EvaluateCurrBoardState(GameLogicMgr gameLogicMgr, int newVal, 
+    public static int EvaluateCurrBoardState(GameLogicMgr gameLogicMgr, int newVal, 
                                             ref List<int> liveDict, ref List<int> deadDict, 
                                             ref List<int> enemyLiveDict, ref List<int> enemyDeadDict)
     {
