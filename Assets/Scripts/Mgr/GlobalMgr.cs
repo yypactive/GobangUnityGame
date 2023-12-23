@@ -64,19 +64,22 @@ public class GlobalMgr
         else
         {
             var newVal = GameRecordMgr.GetCurrRoundCnt();
-            GameLogicMgr.CheckCurrBoardState(newVal - 1, 
-                ref GameLogicMgr.liveDict, 
-                ref GameLogicMgr.deadDict);
-            var liveStr = String.Join(" ", GameLogicMgr.liveDict);
-            var deadStr = String.Join(" ", GameLogicMgr.deadDict);
-            GameLogicMgr.CheckCurrBoardState(newVal,
-                ref GameLogicMgr.liveDict,
-                ref GameLogicMgr.deadDict);
-            var enemyLiveStr = String.Join(" ", GameLogicMgr.liveDict);
-            var enemyDeadStr = String.Join(" ", GameLogicMgr.deadDict);
+            int[] array = new int [16];
+            var liveDict = new List<int>(array);
+            var deadDict = new List<int>(array);
+            var enemyLiveDict = new List<int>(array);
+            var enemyDeadDict = new List<int>(array);
+            var value = MaxMinSearchAiEngine.EvaluateCurrBoardState(
+                GameLogicMgr, newVal - 1, ref liveDict, ref deadDict, ref enemyLiveDict, ref enemyDeadDict
+                );
+            var liveStr = String.Join(" ", liveDict.GetRange(1, 6));
+            var deadStr = String.Join(" ", deadDict.GetRange(1, 6));
+            var enemyLiveStr = String.Join(" ", enemyLiveDict.GetRange(1, 6));
+            var enemyDeadStr = String.Join(" ", enemyDeadDict.GetRange(1, 6));
+
             Debug.LogFormat(
-                "val: {0} liveDict: {1} \n \t deadDict: {2} \n \t enemyLiveDict: {3} \n \t enemyDeadDict: {4}", 
-                newVal - 1, liveStr, deadStr, enemyLiveStr, enemyDeadStr);
+                "turn: {0} liveDict: {1} \t deadDict: {2} \n\t enemy liveDict: {3} \t deadDict: {4} value: {5}", 
+                newVal - 1, liveStr, deadStr, enemyLiveStr, enemyDeadStr, value);
         }
     }
 

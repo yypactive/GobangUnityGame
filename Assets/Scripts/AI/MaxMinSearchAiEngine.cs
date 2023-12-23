@@ -4,14 +4,16 @@ using System.Collections.Generic;
 using UnityEngine;
 public class MaxMinSearchAiEngine: BaseAIEngine
 {
-    public int minSearchLevel = 1;
-    public int maxSearchLevel = 7;
+    public int minSearchLevel = 3;
+    public int maxSearchLevel = 5;
+    public int currSearchLevel = 3;
     protected override void UpdateChessPos()
     {
         // main procedure
         searchCnt = 0;
         cutCnt = 0;
-        finalChessPos = MaxMinValueSearch(minSearchLevel);
+        currSearchLevel = maxSearchLevel;
+        finalChessPos = MaxMinValueSearch(currSearchLevel);
         IsRun = false;
         return;
     }
@@ -26,7 +28,7 @@ public class MaxMinSearchAiEngine: BaseAIEngine
         var enemyVal = 100 * (enemyLiveDict[5] + enemyDeadDict[5]) 
             + 10 * (enemyLiveDict[4] + enemyDeadDict[4]) 
             + enemyLiveDict[3];
-        var potentialPosList = GetPotentialPosList(currRound, enemyVal, false, true);
+        var potentialPosList = GetPotentialPosList(currRound, enemyVal, false);
         // Debug.LogFormat("potentialPosList: {0} {1}\n{2}", potentialPosList.Count, enemyVal, String.Join(" ", potentialPosList));
         foreach (var pos in potentialPosList)
         {
@@ -44,70 +46,78 @@ public class MaxMinSearchAiEngine: BaseAIEngine
             // TODO
             engineLogicMgr.RevokeLastRecord();
         }
-        Debug.LogFormat("bestVal: {0}", bestVal);
         var ran = new System.Random();
         var finalPos = bestValPosList[ran.Next(bestValPosList.Count - 1)];
+        Debug.LogFormat("bestVal: {0} finalPos: {1}", bestVal, finalPos);
         return finalPos;
     }
     private int MinValueSearch(int alpha, int beta, int deep)
     {
         var lastRecord = engineRecordMgr.GetLastRecord();
-        searchCnt++;
         var val = EvaluateCurrBoardState(engineLogicMgr, MyRoundVal(), ref liveDict, ref deadDict, ref enemyLiveDict, ref enemyDeadDict);
         var enemyVal = 100 * (enemyLiveDict[5] + enemyDeadDict[5]) 
             + 10 * (enemyLiveDict[4] + enemyDeadDict[4]) 
             + enemyLiveDict[3];
         if (deep <= 0 || engineLogicMgr.CheckVictory(lastRecord.Pos, lastRecord.Value))
         {
+            // Debug.LogFormat("Min EndTurn: {0} currVal {1} beta {2}", lastRecord.Value + 1, val, beta);
+            searchCnt++;
             return val;
         }
         // TODO
         var bestVal = int.MaxValue;
+        var bestPos = new Vector2Int();
         var currRound = engineRecordMgr.GetCurrRoundCnt();
         var potentialPosList = GetPotentialPosList(currRound, enemyVal);
+        // Debug.LogFormat("Min deep: {0} potentialPosList: {1} {2}\n{3}", deep, potentialPosList.Count, enemyVal, String.Join(" ", potentialPosList));
         foreach (var pos in potentialPosList)
         {
             engineLogicMgr.AddNewRecord(pos.y, pos.x, currRound);
             alpha = Math.Min(bestVal, alpha);
             var currVal = MaxValueSearch(alpha, beta, deep - 1);
-            // Debug.LogFormat("Min deep: {0} pos: {1} val: {2}", deep,  pos, currVal);
+            // Debug.LogFormat("Min deep: {0} pos: {1} val: {2} beta: {3}", deep,  pos, currVal, beta);
             engineLogicMgr.RevokeLastRecord();
             if (currVal < bestVal)
             {
                 bestVal = currVal;
+                bestPos = pos;
             }
             // alpha-beta cut
-            if (currVal <= beta)
+            if (currVal < beta || (currSearchLevel - deep > 1) && currVal == beta)
             {
                 cutCnt++;
+                bestVal = int.MinValue;
                 break;
             }
         }
+        // Debug.LogFormat("Min deep: {0} bestPos: {1} bestVal: {2}", deep, bestPos, bestVal);
         return bestVal;
     }
 
     private int MaxValueSearch(int alpha, int beta, int deep)
     {
-        searchCnt++;
         var lastRecord = engineRecordMgr.GetLastRecord();
-        // Debug.LogFormat("Max Evaluate: {0} currVal {1}", lastRecord.Value + 1, val);
         var val = EvaluateCurrBoardState(engineLogicMgr, MyRoundVal(), ref liveDict, ref deadDict, ref enemyLiveDict, ref enemyDeadDict);
         var enemyVal = 100 * (enemyLiveDict[5] + enemyDeadDict[5]) 
             + 10 * (enemyLiveDict[4] + enemyDeadDict[4]) 
             + enemyLiveDict[3];
         if (deep <= 0 || engineLogicMgr.CheckVictory(lastRecord.Pos, lastRecord.Value))
         {
+            // Debug.LogFormat("Max EndTurn: {0} currVal {1}", lastRecord.Value + 1, val);
+            searchCnt++;
             return val;
         }
         var bestVal = int.MinValue;
+        var bestPos = new Vector2Int();
         var currRound = engineRecordMgr.GetCurrRoundCnt();
         var potentialPosList = GetPotentialPosList(currRound, enemyVal);
+        // Debug.LogFormat("Min deep: {0} potentialPosList: {1} {2}\n{3}", deep, potentialPosList.Count, enemyVal, String.Join(" ", potentialPosList));
         foreach (var pos in potentialPosList)
         {
             engineLogicMgr.AddNewRecord(pos.y, pos.x, currRound);
-            beta =  Math.Max(bestVal, beta);
+            beta = Math.Max(bestVal, beta);
             var currVal = MinValueSearch(alpha, beta, deep - 1);
-            // Debug.LogFormat("Max deep: {0} pos: {1} val: {2}", deep,  pos, currVal);
+            // Debug.LogFormat("Max deep: {0} pos: {1} val: {2} alpha: {3}", deep,  pos, currVal, alpha);
             engineLogicMgr.RevokeLastRecord();
             if (currVal > bestVal)
             {
@@ -117,10 +127,12 @@ public class MaxMinSearchAiEngine: BaseAIEngine
             if (currVal >= alpha)
             {
                 cutCnt++;
+                bestVal = int.MaxValue;
                 break;
             }
 
         }
+        // Debug.LogFormat("Max deep: {0} bestPos: {1} bestVal: {2}", deep,  bestPos, bestVal);
         return bestVal;
     }
 
@@ -132,16 +144,24 @@ public class MaxMinSearchAiEngine: BaseAIEngine
         // need update
         gameLogicMgr.CheckCurrBoardState(newVal, ref liveDict, ref deadDict);
         gameLogicMgr.CheckCurrBoardState(newVal + 1, ref enemyLiveDict, ref enemyDeadDict);
-        // Debug.LogFormat("val: {0} liveDict: {1}", newVal, String.Join(" ", liveDict));
-        // Debug.LogFormat("val: {0} deadDict: {1}", newVal, String.Join(" ", deadDict));
-        // Debug.LogFormat("val: {0} enemyLiveDict: {1}", newVal + 1, String.Join(" ", enemyLiveDict));
-        // Debug.LogFormat("val: {0} enemyDeadDict: {1}", newVal + 1, String.Join(" ", enemyDeadDict));
+        // Debug.LogFormat(
+        //     "val: {0} liveDict: {1} \t\t deadDict: {2} \n\t enemy liveDict: {3} \t\t deadDict: {4}", 
+        //     newVal, 
+        //     String.Join(" ", liveDict.GetRange(1, 6)),
+        //     String.Join(" ", deadDict.GetRange(1, 6)), 
+        //     String.Join(" ", enemyLiveDict.GetRange(1, 6)), 
+        //     String.Join(" ", enemyDeadDict.GetRange(1, 6))
+        //     );
 
         // end
-        if (enemyLiveDict[6] + enemyDeadDict[6] > 0) return -100000;
-        if (enemyLiveDict[5] + enemyDeadDict[5] > 0) return -100000;
-        if (liveDict[6] + deadDict[6] > 0) return 100000; 
-        if (liveDict[5] + deadDict[5] > 0) return 100000;
+        if (enemyLiveDict[6] > 0) return -160000;
+        if (enemyDeadDict[6] > 0) return -150000;
+        if (enemyLiveDict[5] > 0) return -110000;
+        if (enemyDeadDict[5] > 0) return -100000;
+        if (liveDict[6] > 0) return 160000;
+        if (deadDict[6] > 0) return 150000; 
+        if (liveDict[5] > 0) return 110000;
+        if (deadDict[5] > 0) return 100000;
 
         //dangerous
         if (enemyLiveDict[4] > 0) return -10000;

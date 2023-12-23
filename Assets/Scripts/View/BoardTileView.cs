@@ -99,6 +99,7 @@ public class BoardTileView : MonoBehaviour
 
     public void OnTileClicked()
     {
+        // Debug.LogFormat("Tile: {0}", Pos);
         if (GlobalMgr.Instance.IsAiRound())
             return;
         var mainUIPanelView = PanelMgr.Instance.GetSingletonView(

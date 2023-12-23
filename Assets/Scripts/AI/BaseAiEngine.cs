@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class BaseAIEngine
 {
-    public static int waitTime = 5;
+    public static int waitTime = 20;
 
     protected GameRecordMgr engineRecordMgr;
     private int currGameRecordCnt;
@@ -33,7 +33,7 @@ public class BaseAIEngine
     private void FindChessPosThread()
     {
         var startTime = UI.GetCurrClientMilliTimeStamp();
-        Debug.LogFormat("#BaseAIEngine# startTime: {0}", startTime);
+        // Debug.LogFormat("#AI# startTime: {0}", startTime);
         InitCurrStatus();
         while (true)
         {
@@ -42,8 +42,11 @@ public class BaseAIEngine
             if (!IsRun || currTime - startTime > waitTime * 1000)
             {
                 var endTime = UI.GetCurrClientMilliTimeStamp();
-                Debug.LogFormat("#BaseAIEngine# endTime: {0} deltaTime: {1}\n \t searchCnt: {2} cutCnt: {3}", 
-                    endTime, endTime - startTime, searchCnt, cutCnt);
+                Debug.LogFormat("#AI# result: {4} \t deltaTime: {0}\n searchCnt: {1} \t cutCnt: {2} \t cutRatio: {3}%", 
+                    (endTime - startTime) / 1000f, 
+                    searchCnt, cutCnt, (cutCnt*10000/searchCnt)/100f,
+                    IsRun ? "STOP" : "FINISH"
+                    );
                 mainThreadSynContext.Post(
                     new SendOrPostCallback(_RealAddNewChess), null);
                 return;
@@ -120,14 +123,19 @@ public class BaseAIEngine
         return;
     }
 
+    List<Vector2Int> emptyPosList = new List <Vector2Int>();
+    List<Vector2Int> range1PosList = new List<Vector2Int>();
+    List<Vector2Int> range2PosList = new List<Vector2Int>();
+
+    Vector2Int rangeOne = new Vector2Int(1, 1);
+    Vector2Int rangeTwo = new Vector2Int(2, 2);
     // TODO: update this func
     protected List<Vector2Int> GetPotentialPosList(int roundVal, int enemyVal = 0, bool bRange2 = false, bool showLog = false)
     {
-        List <Vector2Int> emptyPosList = new List <Vector2Int>();
-        var range1PosList = new List<Vector2Int>();
-        var range2PosList = new List<Vector2Int>(); 
-        var rangeOne = new Vector2Int(1, 1);
-        var rangeTwo = new Vector2Int(2, 2);
+        emptyPosList.Clear();
+        range1PosList.Clear();
+        range2PosList.Clear();
+
         for (int i = 0; i < GameLogicMgr.tileCnt; ++i)
             for (int j = 0; j < GameLogicMgr.tileCnt; ++j)
             {
@@ -135,11 +143,12 @@ public class BaseAIEngine
                 if(engineLogicMgr.IsChessValid(pos))
                     emptyPosList.Add(pos);
             }
-        var fiveList = new List<Vector2Int>();
-        var fourList = new List<Vector2Int>();
-        var killChessList = new List<Vector2Int>();
-        var threeList = new List<Vector2Int>();
-        foreach(var pos in emptyPosList)
+
+        List<Vector2Int> fourList = new List<Vector2Int>();
+        List<Vector2Int> killChessList = new List<Vector2Int>();
+        List<Vector2Int> threeList = new List<Vector2Int>();
+
+        foreach (var pos in emptyPosList)
         {
             var bRangeOne = false;
             var bRangeTwo = false;
@@ -165,11 +174,6 @@ public class BaseAIEngine
                 else if (bRangeTwo)
                     range2PosList.Add(pos);
             }
-        }
-        if (fiveList.Count > 0)
-        {
-            // Debug.LogFormat("fiveList: {0}", String.Join(" ", fiveList));
-            return fiveList;
         }
         if (fourList.Count > 0)
         {
