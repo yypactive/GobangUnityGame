@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 public class MaxMinSearchAiEngine: BaseAIEngine
 {
-    public int minSearchLevel = 3;
+    public int minSearchLevel = 1;
     public int maxSearchLevel = 5;
     public int currSearchLevel = 3;
     protected override void UpdateChessPos()
@@ -12,7 +12,7 @@ public class MaxMinSearchAiEngine: BaseAIEngine
         // main procedure
         searchCnt = 0;
         cutCnt = 0;
-        currSearchLevel = maxSearchLevel;
+        // currSearchLevel = maxSearchLevel;
         finalChessPos = MaxMinValueSearch(currSearchLevel);
         IsRun = false;
         return;
@@ -108,7 +108,7 @@ public class MaxMinSearchAiEngine: BaseAIEngine
             return val;
         }
         var bestVal = int.MinValue;
-        var bestPos = new Vector2Int();
+        // var bestPos = new Vector2Int();
         var currRound = engineRecordMgr.GetCurrRoundCnt();
         var potentialPosList = GetPotentialPosList(currRound, enemyVal);
         // Debug.LogFormat("Min deep: {0} potentialPosList: {1} {2}\n{3}", deep, potentialPosList.Count, enemyVal, String.Join(" ", potentialPosList));
@@ -153,53 +153,89 @@ public class MaxMinSearchAiEngine: BaseAIEngine
         //     String.Join(" ", enemyDeadDict.GetRange(1, 6))
         //     );
 
+        var result = 0;
         // end
-        if (enemyLiveDict[6] > 0) return -160000;
-        if (enemyDeadDict[6] > 0) return -150000;
-        if (enemyLiveDict[5] > 0) return -110000;
-        if (enemyDeadDict[5] > 0) return -100000;
-        if (liveDict[6] > 0) return 160000;
-        if (deadDict[6] > 0) return 150000; 
-        if (liveDict[5] > 0) return 110000;
-        if (deadDict[5] > 0) return 100000;
+        if (result <= 0)
+        {
+            if (enemyLiveDict[6] > 0) result -= 160000;
+            if (enemyDeadDict[6] > 0) result -= 150000;
+            if (enemyLiveDict[5] > 0) result -= 110000;
+            if (enemyDeadDict[5] > 0) result -= 100000;
+        }
+        if (result >= 0)
+        {
+            if (liveDict[6] > 0) result += 160000;
+            if (deadDict[6] > 0) result += 150000; 
+            if (liveDict[5] > 0) result += 110000;
+            if (deadDict[5] > 0) result += 100000;
+        }
 
         //dangerous
-        if (enemyLiveDict[4] > 0) return -10000;
-        if (enemyDeadDict[4] > 1) return -10000;
-        if (enemyDeadDict[4] > 0 && enemyLiveDict[3] > 0) return -10000;
-        if (enemyDeadDict[4] > 0) return -500;
+        if (result <= 0)
+        {
+            if (enemyLiveDict[4] > 0) result -= 10000;
+            if (enemyDeadDict[4] > 1) result -= 10000;
+            if (enemyDeadDict[4] > 0 && enemyLiveDict[3] > 0) result -= 9500;
+            if (enemyDeadDict[4] == 1) result -= 500;
+        }
+        if (result >= 0)
+        {
+            if (liveDict[4] > 0) result += 10000;
+            if (deadDict[4] > 1) result += 10000;
+            if (deadDict[4] > 0 && liveDict[3] > 0) result += 9500;
+            if (deadDict[4] == 1) result += 500;
+        }
 
-        if (liveDict[4] > 0) return 10000;
-        if (deadDict[4] > 1) return 10000;
-        if (deadDict[4] > 0 && liveDict[3] > 0) return 10000;
-        if (deadDict[4] > 0) return 500;
+        if (result <= 0)
+        {
+            if (enemyLiveDict[3] > 1) result -= 5000;
+        }
+        if (result >= 0)
+        {
+            if (liveDict[3] > 1) result += 5000;
+        }
+        
+        if (result <= 0)
+        {
+            if (enemyLiveDict[3] > 0 && enemyDeadDict[3] > 0) result -= 1000;
+        }
+        if (result >= 0)
+        {
+            if (liveDict[3] > 0 && deadDict[3] > 0) result += 1000;
+        }
 
-        if (enemyLiveDict[3] > 1) return -5000;
-        if (liveDict[3] > 1) return 5000;
-
-        if (enemyLiveDict[3] > 0 && enemyDeadDict[3] > 0) return -1000;
-        if (liveDict[3] > 0 && deadDict[3] > 0) return 1000;
-
-        if (enemyLiveDict[3] > 0) return -200;
-        if (liveDict[3] > 0) return 200;
+        
+        if (result <= 0)
+        {
+            if (enemyLiveDict[3] == 1) result -= 200;
+        }
+        if (result >= 0)
+        {
+            if (liveDict[3] == 1) result += 200;
+        }
 
         //grow
-        if (liveDict[2] > 1) return 100;
-        if (enemyLiveDict[2] > 1) return -100;
+        if (result == 0)
+        {
+            if (liveDict[2] > 1) return 100;
+            if (enemyLiveDict[2] > 1) return -100;
 
-        if (deadDict[3] > 0) return 50;
-        if (enemyDeadDict[3] > 0) return -50;
+            if (deadDict[3] > 0) return 50;
+            if (enemyDeadDict[3] > 0) return -50;
 
-        if (liveDict[2] > 0 && deadDict[2] > 0) return 10;
-        if (enemyLiveDict[2] > 0 && enemyDeadDict[2] > 0) return -10;
+            if (liveDict[2] > 0 && deadDict[2] > 0) return 10;
+            if (enemyLiveDict[2] > 0 && enemyDeadDict[2] > 0) return -10;
 
-        if (liveDict[2] > 0) return 5;
-        if (enemyLiveDict[2] > 0) return -5;
+            if (liveDict[2] > 0) return 5;
+            if (enemyLiveDict[2] > 0) return -5;
 
-        if (deadDict[2] > 0) return 3;
-        if (enemyDeadDict[2] > 0) return -3;
+            if (deadDict[2] > 0) return 3;
+            if (enemyDeadDict[2] > 0) return -3;
+        }
 
-        return 0;
+
+
+        return result;
 
     }
 
