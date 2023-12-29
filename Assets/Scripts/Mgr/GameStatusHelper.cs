@@ -20,7 +20,7 @@ public class GameStatusHelper
     List<Vector2Int> startPosArray = new List<Vector2Int>();
     List<Vector2Int> endPosArray = new List<Vector2Int>();
 
-    const int deltaLength = 2;
+    const int deltaLength = 3;
     const int winLength = 6;
 
     public GameStatusHelper (GameLogicMgr gameRecordMgr)
@@ -293,7 +293,7 @@ public class GameStatusHelper
         {0b10111     , 4},
         {0b11110     , 4},
         {0b01111     , 4},
-        {0b11111     , 5.5f}
+        {0b11111     , 5}
     };
 
     public static Dictionary<int, float> hash6Table = new Dictionary<int, float>
@@ -303,6 +303,12 @@ public class GameStatusHelper
         {0b011110    , 4.5f},
         {0b111111    , 6.5f}
     };
+
+    public static Dictionary<int, float> hash7Table = new Dictionary<int, float>
+    {
+        {0b0111110    , 5.5f}
+    };
+
 
     public void CheckOneLineStatus(int val, Vector2Int dir, ref List<int> liveDict, ref List<int> deadDict)
     {
@@ -322,6 +328,7 @@ public class GameStatusHelper
             var currVal = 0F;
             var currHash5Key = 0;
             var currHash6Key = 0;
+            var currHash7Key = 0;
             for (int j = 0; j < arrayLength; j++)
             {            
                 var posY = startPos.y + dir.y * j;
@@ -348,6 +355,7 @@ public class GameStatusHelper
                     currVal = 0;
                     currHash5Key = 0;
                     currHash6Key = 0;
+                    currHash7Key = 0;
                 }
                 else
                 {
@@ -355,6 +363,7 @@ public class GameStatusHelper
                     var bitVal = empty ? 0 : 1;
                     currHash5Key = ((currHash5Key & 0b11111) << 1) + bitVal;
                     currHash6Key = ((currHash6Key & 0b111111) << 1) + bitVal;
+                    currHash7Key = ((currHash7Key & 0b1111111) << 1) + bitVal;
                     // check hash 5
                     if (currLength >= 5)
                     {
@@ -373,7 +382,16 @@ public class GameStatusHelper
                             var hashVal = hash6Table[currHash6Key];
                             currVal = currVal > hashVal ? currVal : hashVal;
                         }
-                    }   
+                    }
+                    // check hash 7
+                    if (currLength >= 7)
+                    {
+                        if (hash7Table.ContainsKey(currHash7Key))
+                        {
+                            var hashVal = hash7Table[currHash7Key];
+                            currVal = currVal > hashVal ? currVal : hashVal;
+                        }
+                    }
                 }           
             }
             // record result

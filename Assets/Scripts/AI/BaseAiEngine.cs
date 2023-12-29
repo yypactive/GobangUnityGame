@@ -143,7 +143,7 @@ public class BaseAIEngine
                 if(engineLogicMgr.IsChessValid(pos))
                     emptyPosList.Add(pos);
             }
-
+        List<Vector2Int> fiveList = new List<Vector2Int>();
         List<Vector2Int> fourList = new List<Vector2Int>();
         List<Vector2Int> killChessList = new List<Vector2Int>();
         List<Vector2Int> threeList = new List<Vector2Int>();
@@ -162,7 +162,7 @@ public class BaseAIEngine
                 // if (showLog && currRoundVal > 0)
                 //     Debug.LogFormat("pos: {0} currRoundVal: {1} ", pos, currRoundVal);
                 if (currRoundVal >= 100)
-                    return new List<Vector2Int>{pos};
+                    fiveList.Add(pos);
                 else if (currRoundVal >= 10 && enemyVal < 10)
                     fourList.Add(pos);
                 else if (currRoundVal > 1 && enemyVal == 0)
@@ -174,6 +174,10 @@ public class BaseAIEngine
                 else if (bRangeTwo)
                     range2PosList.Add(pos);
             }
+        }
+        if (fiveList.Count > 0)
+        {
+            return fiveList;
         }
         if (fourList.Count > 0)
         {

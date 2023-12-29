@@ -57,29 +57,27 @@ public class GlobalMgr
         GlobalMgr.Instance.ClearTmpChess();
         var mainUIView = PanelMgr.Instance.GetSingletonView(Type.GetType("MainUIPanelView")) as MainUIPanelView;
         mainUIView.UpdateMainUI();
+
+        var newVal = GameRecordMgr.GetCurrRoundCnt();
+        int[] array = new int [16];
+        var liveDict = new List<int>(array);
+        var deadDict = new List<int>(array);
+        var enemyLiveDict = new List<int>(array);
+        var enemyDeadDict = new List<int>(array);
+        var value = MaxMinSearchAiEngine.EvaluateCurrBoardState(
+            GameLogicMgr, newVal - 1, ref liveDict, ref deadDict, ref enemyLiveDict, ref enemyDeadDict
+            );
+        var liveStr = String.Join(" ", liveDict.GetRange(1, 6));
+        var deadStr = String.Join(" ", deadDict.GetRange(1, 6));
+        var enemyLiveStr = String.Join(" ", enemyLiveDict.GetRange(1, 6));
+        var enemyDeadStr = String.Join(" ", enemyDeadDict.GetRange(1, 6));
+        Debug.LogFormat(
+            "turn: {0} liveDict: {1} \t deadDict: {2} \n\t enemy liveDict: {3} \t deadDict: {4} value: {5}", 
+            newVal - 1, liveStr, deadStr, enemyLiveStr, enemyDeadStr, value);
+            
         if (IsAiRound())
         {
             CurrRoundAIEngine.TryAddNewChess();
-        }
-        else
-        {
-            var newVal = GameRecordMgr.GetCurrRoundCnt();
-            int[] array = new int [16];
-            var liveDict = new List<int>(array);
-            var deadDict = new List<int>(array);
-            var enemyLiveDict = new List<int>(array);
-            var enemyDeadDict = new List<int>(array);
-            var value = MaxMinSearchAiEngine.EvaluateCurrBoardState(
-                GameLogicMgr, newVal - 1, ref liveDict, ref deadDict, ref enemyLiveDict, ref enemyDeadDict
-                );
-            var liveStr = String.Join(" ", liveDict.GetRange(1, 6));
-            var deadStr = String.Join(" ", deadDict.GetRange(1, 6));
-            var enemyLiveStr = String.Join(" ", enemyLiveDict.GetRange(1, 6));
-            var enemyDeadStr = String.Join(" ", enemyDeadDict.GetRange(1, 6));
-
-            Debug.LogFormat(
-                "turn: {0} liveDict: {1} \t deadDict: {2} \n\t enemy liveDict: {3} \t deadDict: {4} value: {5}", 
-                newVal - 1, liveStr, deadStr, enemyLiveStr, enemyDeadStr, value);
         }
     }
 
