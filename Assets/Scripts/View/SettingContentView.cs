@@ -46,6 +46,8 @@ class Setting
     static public AddChessMode addChessMode = (AddChessMode)0;
 #endif
 
+    static public int aiDepth = 3;
+
     public static void LogSetting()
     {
         Debug.LogFormat("[Setting] GameMode: {0}\nShowMode: {1}\nshowMode: {2}\naddChessMode: {3}", 
@@ -59,9 +61,11 @@ class Setting
 public class SettingContentView : MonoBehaviour
 {
     public List<Transform> toggleRootList;
-    private delegate void xxx (int i, int j, Toggle toggle);
+    public List<Slider> barRootList;
+    private delegate void ToggleDelegate (int i, int j, Toggle toggle);
+    private delegate void BarDelegate (int i, Slider slider);
 
-    void TraverseToggles(xxx func)
+    void TraverseToggles(ToggleDelegate func)
     {
         for (int i = 0; i < toggleRootList.Count; i++)
         {
@@ -78,10 +82,19 @@ public class SettingContentView : MonoBehaviour
         }
     }
 
+    void TraverseBars(BarDelegate func)
+    {
+        for (int i = 0; i < barRootList.Count; i++)
+        {
+            var slider = barRootList[i];
+            func(i, slider);
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        InitToggle();
+        InitSettingUI();
     }
 
     void OnEnable()
@@ -89,7 +102,7 @@ public class SettingContentView : MonoBehaviour
         UpdateUIBySetting();
     }
 
-    void InitToggle()
+    void InitSettingUI()
     {
         TraverseToggles(
             delegate (int i, int j, Toggle toggle)
@@ -113,7 +126,7 @@ public class SettingContentView : MonoBehaviour
                                 break;
                             case 3:
                                 Setting.addChessMode = (Setting.AddChessMode)j;
-                                Debug.LogFormat("[Setting] RuleMode: {0}", j);
+                                Debug.LogFormat("[Setting] AddChessMode: {0}", j);
                                 break;
                             default:
                                 Debug.LogError("[Setting] Unknown Mode");
@@ -121,7 +134,30 @@ public class SettingContentView : MonoBehaviour
                         }
                     }
                 );
-            });
+            }
+        );
+
+        TraverseBars(
+            delegate(int i, Slider slider)
+            {
+                slider.onValueChanged.AddListener(
+                    delegate (float value)
+                    {
+                        switch (i)
+                        {
+                            case 0:
+                                Setting.aiDepth = (int)value;
+                                Debug.LogFormat("[Setting] aiDepth: {0}", Setting.aiDepth);
+                                break;
+                            default:
+                                Debug.LogError("[Setting] Unknown Mode");
+                                break;
+                        }
+                    }
+                );
+            }
+        );
+
     }
 
     public void UpdateSettingByUI()
@@ -149,7 +185,20 @@ public class SettingContentView : MonoBehaviour
                             break;
                     }
                 }
-            });
+            }
+        );
+        
+        TraverseBars(delegate(int i, Slider slider)
+        {
+            switch (i)
+            {
+                case 0:
+                    Setting.aiDepth = (int)Math.Round(slider.value);
+                    break;
+                default:
+                    break;
+            }
+        });
     }
 
     public void UpdateUIBySetting()
@@ -174,6 +223,18 @@ public class SettingContentView : MonoBehaviour
                 case 3:
                     value = (int)Setting.addChessMode;
                     toggle.isOn = value == j;
+                    break;
+                default:
+                    break;
+            }
+        });
+        
+        TraverseBars(delegate(int i, Slider slider)
+        {
+            switch (i)
+            {
+                case 0:
+                    slider.value = (float)Setting.aiDepth;
                     break;
                 default:
                     break;

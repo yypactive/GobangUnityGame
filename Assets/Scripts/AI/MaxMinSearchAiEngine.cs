@@ -12,7 +12,8 @@ public class MaxMinSearchAiEngine: BaseAIEngine
         // main procedure
         searchCnt = 0;
         cutCnt = 0;
-        // currSearchLevel = maxSearchLevel;
+        currSearchLevel = Setting.aiDepth * 2 - 1;
+        Debug.LogFormat("[AI] Search Level: {0}", currSearchLevel);
         finalChessPos = MaxMinValueSearch(currSearchLevel);
         IsRun = false;
         return;
