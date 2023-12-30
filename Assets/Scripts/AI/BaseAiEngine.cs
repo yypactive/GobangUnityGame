@@ -15,6 +15,7 @@ public class BaseAIEngine
     public bool IsRun {get; protected set;}
     private SynchronizationContext mainThreadSynContext;
     protected Vector2Int finalChessPos;
+    public long startTime = 0;
     // log
     public int searchCnt = 0;
     public int cutCnt = 0;
@@ -32,30 +33,25 @@ public class BaseAIEngine
 
     private void FindChessPosThread()
     {
-        var startTime = UI.GetCurrClientMilliTimeStamp();
-        // Debug.LogFormat("#AI# startTime: {0}", startTime);
+
         InitCurrStatus();
-        while (true)
-        {
-            UpdateChessPos();
-            var currTime = UI.GetCurrClientMilliTimeStamp();
-            if (!IsRun || currTime - startTime > waitTime * 1000)
-            {
-                var endTime = UI.GetCurrClientMilliTimeStamp();
-                Debug.LogFormat("#AI# result: {4} \t deltaTime: {0}\n searchCnt: {1} \t cutCnt: {2} \t cutRatio: {3}%", 
-                    (endTime - startTime) / 1000f, 
-                    searchCnt, cutCnt, (cutCnt*10000/searchCnt)/100f,
-                    IsRun ? "STOP" : "FINISH"
-                    );
-                mainThreadSynContext.Post(
-                    new SendOrPostCallback(_RealAddNewChess), null);
-                return;
-            }
-        }
+        UpdateChessPos();
+        var endTime = UI.GetCurrClientMilliTimeStamp();
+        Debug.LogFormat("#AI# result: {4} \t deltaTime: {0}\n searchCnt: {1} \t cutCnt: {2} \t cutRatio: {3}%", 
+            (endTime - startTime) / 1000f, 
+            searchCnt, cutCnt, (cutCnt*10000/searchCnt)/100f,
+            CheckEnd() ? "STOP" : "FINISH"
+            );
+        IsRun = false;
+        mainThreadSynContext.Post(
+            new SendOrPostCallback(_RealAddNewChess), null);
     }
 
     protected virtual void InitCurrStatus()
     {
+        startTime = UI.GetCurrClientMilliTimeStamp();
+        // Debug.LogFormat("#AI# startTime: {0}", startTime);
+
         engineRecordMgr = new GameRecordMgr(GlobalMgr.Instance.GameRecordMgr);
         currGameRecordCnt = GlobalMgr.Instance.GameRecordMgr.GameRecordStack.Count;
         engineLogicMgr = new GameLogicMgr(engineRecordMgr);
@@ -66,6 +62,11 @@ public class BaseAIEngine
         enemyLiveDict = new List<int>(array);
         enemyDeadDict = new List<int>(array);
         IsRun = true;
+    }
+    protected virtual bool CheckEnd()
+    {
+        var currTime = UI.GetCurrClientMilliTimeStamp();
+        return currTime - startTime > waitTime * 1000;
     }
 
     protected int MyRoundVal()

@@ -6,7 +6,7 @@ public class MaxMinSearchAiEngine: BaseAIEngine
 {
     public int minSearchLevel = 1;
     public int maxSearchLevel = 5;
-    public int currSearchLevel = 7;
+    public int currSearchLevel = 5;
     protected override void UpdateChessPos()
     {
         // main procedure
@@ -45,6 +45,8 @@ public class MaxMinSearchAiEngine: BaseAIEngine
             }
             // TODO
             engineLogicMgr.RevokeLastRecord();
+            if (CheckEnd())
+                break;
         }
         var ran = new System.Random();
         var finalPos = bestValPosList[ran.Next(bestValPosList.Count - 1)];
@@ -206,11 +208,11 @@ public class MaxMinSearchAiEngine: BaseAIEngine
         
         if (result <= 0)
         {
-            if (enemyLiveDict[3] == 1) result -= 200;
+            if (enemyLiveDict[3] == 1) result -= 500;
         }
         if (result >= 0)
         {
-            if (liveDict[3] == 1) result += 200;
+            if (liveDict[3] == 1) result += 500;
         }
 
         //grow
@@ -219,17 +221,17 @@ public class MaxMinSearchAiEngine: BaseAIEngine
             // if (liveDict[2] > 1) result += liveDict[2] * 75;
             // if (enemyLiveDict[2] > 1) result -= enemyLiveDict[2] * 75;
 
-            if (deadDict[3] > 0) result += deadDict[3] * 10;
-            if (enemyDeadDict[3] > 0) result -= enemyDeadDict[3] * 10;
+            if (deadDict[3] > 0) result += deadDict[3] * 25;
+            if (enemyDeadDict[3] > 0) result -= enemyDeadDict[3] * 25;
 
             // if (liveDict[2] > 0 && deadDict[2] > 0) return 10;
             // if (enemyLiveDict[2] > 0 && enemyDeadDict[2] > 0) return -10;
 
-            if (liveDict[2] > 0) result += liveDict[2] * 10;
-            if (enemyLiveDict[2] > 0) result -= enemyLiveDict[2] * 10;
+            if (liveDict[2] > 0) result += liveDict[2] * 20;
+            if (enemyLiveDict[2] > 0) result -= enemyLiveDict[2] * 20;
 
-            if (deadDict[2] > 0) result += deadDict[2] * 3;
-            if (enemyDeadDict[2] > 0) result -= enemyDeadDict[2] * 3;
+            if (deadDict[2] > 0) result += deadDict[2] * 5;
+            if (enemyDeadDict[2] > 0) result -= enemyDeadDict[2] * 5;
         }
 
         return result;
