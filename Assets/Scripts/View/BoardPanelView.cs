@@ -49,7 +49,7 @@ public class BoardPanelView : BaseSingletonView
                 scalex = tilesize / tileRect.rect.width;
                 scaley = tilesize / tileRect.rect.height;
 
-                cloneTile.transform.parent = rect;
+                cloneTile.transform.SetParent(rect);
                 var pos = new Vector3(
                     offsetx + j * (tilesize + space) - 0.475f * bgw
                     , offsety + i * (tilesize + space) - 0.475f * bgh
